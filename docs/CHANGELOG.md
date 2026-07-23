@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## v0.8 — GitHub Pages 배포 (2026-07-23)
+> **마지막 큰 단계 완료.** 정적 앱을 GitHub Pages에 배포 → 실제 URL로 접속 가능.
+
+- **저장소**: `design-purim/toksum` (Public). 로컬 git 초기화 → 첫 커밋(`.bak` 백업파일은 `.gitignore`로 제외) → push.
+- **라이브 URL**: https://design-purim.github.io/toksum/ (main 브랜치 root에서 서빙, HTTPS 강제). 빌드 완료·HTTP 200 확인.
+- **배포 도구**: `gh` CLI 2.96.0를 `~/.local/bin/gh`에 바이너리로 설치(brew·시스템 무변경, 홈 폴더 파일 1개). HTTPS + gh 자격증명 헬퍼로 push.
+- **신규 파일**: `.gitignore`(`*.bak`, `.DS_Store`, `.claude/`, `__pycache__/` 제외).
+- ⚠️ **Firebase 승인 도메인**: 배포 도메인 `design-purim.github.io`를 Firebase 콘솔 Authentication → Settings → 승인된 도메인에 추가해야 로그인 동작(콘솔 작업, 사용자 진행). `authDomain`(`toksum-107fe.firebaseapp.com`)은 그대로.
+- **이후 갱신**: 코드 수정 → `git push` 한 번 → Pages 자동 재빌드.
+
 ## v0.7 — Firestore 동기화 + 데모 시드 제거 + 금액 포맷 공용화 (2026-07-23)
 > 로그인의 실제 목적(다기기 메뉴 동기화) 완성. 신규 사용자 상태로 정리하고, 금액 콤마 포맷을 메뉴 설정 시트까지 확장.
 

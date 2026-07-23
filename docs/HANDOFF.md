@@ -1,7 +1,7 @@
 # HANDOFF — 세션 인수인계 문서
 
 > 완전히 새 세션에서도 작업을 매끄럽게 이어갈 수 있도록 정리한 문서.
-> 최종 갱신: 2026-07-23 (**톡셈** — 범용 견적기, 정적 PWA) — **앱 이름 확정(톡셈) + 그린 테마 전환 + Firebase 로그인 코드**(v0.6, CHANGELOG 참고). 그 전 v0.5: 계산 로직·실행취소/비우기·메뉴 설정 저장·커스텀 체크박스.
+> 최종 갱신: 2026-07-23 (**톡셈** — 범용 견적기, 정적 PWA) — **GitHub Pages 배포 완료**(v0.8). 라이브: https://design-purim.github.io/toksum/ · 저장소: `design-purim/toksum`(Public). 그 전: v0.7 Firestore 동기화, v0.6 톡셈 브랜딩+그린 테마+Firebase 로그인, v0.5 계산 로직·저장 (CHANGELOG 참고).
 >
 > 📛 **앱 이름 = 톡셈** (영문 **Toksum** — Tok 톡톡 누르기 + sum 셈·합계). "톡톡 눌러 셈한다". ⚠️ **표지 전용이 아니라 업종 불문 "항목 눌러 빠르게 견적" 범용 툴**로 포지셔닝(사용자 확정). 기존 "표지 디자인 견적 계산기" 표현은 레거시.
 
@@ -13,7 +13,7 @@
 
 ## 0. 한 줄 요약
 
-**톡셈** — 미리 등록한 항목(메뉴)을 톡톡 눌러 빠르게 견적을 만들고 복사하는 모바일 우선 정적 웹앱(HTML/CSS/Vanilla JS + Firebase + GitHub Pages). 업종 불문 범용. **디자인·구조 + 계산 로직(추가·50%·할인·체크합계·복사·실행취소·비우기) + 그린 테마 + Firebase Google 로그인 + Firestore 다기기 동기화(회원 메뉴 설정)까지 완료. 남은 건 GitHub Pages 배포뿐.**
+**톡셈** — 미리 등록한 항목(메뉴)을 톡톡 눌러 빠르게 견적을 만들고 복사하는 모바일 우선 정적 웹앱(HTML/CSS/Vanilla JS + Firebase + GitHub Pages). 업종 불문 범용. **디자인·구조 + 계산 로직(추가·50%·할인·체크합계·복사·실행취소·비우기) + 그린 테마 + Firebase Google 로그인 + Firestore 다기기 동기화(회원 메뉴 설정) + GitHub Pages 배포까지 완료.** 라이브: https://design-purim.github.io/toksum/ . **핵심 기능 단계는 모두 끝났고, 남은 건 다듬기(로고/PWA 셸/디자인).** ⚠️ 로그인이 배포 도메인에서 되려면 Firebase 승인 도메인 추가 필요 — §8 참고.
 
 ## 1. 기술 스택 / 제약
 
@@ -82,7 +82,7 @@ docs/                 # SPEC/UI/TODO(초안) + DESIGN.md + HANDOFF.md(이 문서
 - [x] **LocalStorage 저장 (v0.5)** — **메뉴 설정(폴더/메뉴)만** 저장/복원(비회원). 견적 목록(items)은 저장 안 함(사용자 선택).
 - [x] **Firebase 로그인 (v0.6, 완료)** — Google 로그인 실동작. 프로젝트 `toksum-107fe`. 헤더 👤 → 계정 바텀시트(로그인/로그아웃), 로그인 시 프로필 아바타.
 - [x] **Firestore 동기화 (v0.7, 완료·다기기 검증)** — 로그인 사용자의 메뉴 설정(폴더/메뉴)을 `users/{uid}.folders`에 저장/복원. 로그인 시 클라우드 우선 로드, 변경 시 디바운스 저장. `js/modules/cloud.js`. 보안 규칙은 본인만 read/write.
-- [ ] **GitHub Pages 배포 (다음 차례 — 마지막 큰 단계).**
+- [x] **GitHub Pages 배포 (v0.8, 완료)** — 저장소 `design-purim/toksum`(Public), main 브랜치 root 서빙, 라이브 https://design-purim.github.io/toksum/ (HTTP 200 확인). `gh` CLI는 `~/.local/bin/gh`(바이너리, 시스템 무변경). 갱신은 `git push`면 자동 재빌드. ⚠️ 로그인용 Firebase 승인 도메인 추가는 §8 참고.
 
 **클릭 액션(main.js `onClick`) 현황:** 전부 연결됨 — `open-menu, toggle-folder, add-menu, add-direct, half, discount, copy, remove-item, undo, clear, open-account`(계정 바텀시트) + 체크박스 `toggle-item`(별도 `change` 리스너). (redo는 v0.4에서 제거)
 
@@ -142,15 +142,16 @@ docs/                 # SPEC/UI/TODO(초안) + DESIGN.md + HANDOFF.md(이 문서
 
 > ⚠️ **작업 모드는 여전히 "사용자 주도".** 디자인 다듬기와 기능 구현을 사용자가 그때그때 오간다(이번 세션도 디자인 몇 개 → 계산 로직 조각 순으로 진행). 새 화면/기능을 임의로 크게 만들지 말고, 사용자가 짚는 지점을 조각 단위로 처리하며 매번 8777에서 눈으로 확인.
 
-- ✅ **v0.2~v0.7 완료**(CHANGELOG). 계산 로직·저장·그린 테마·톡셈 브랜딩·Google 로그인·Firestore 다기기 동기화까지 실동작. **남은 큰 단계는 GitHub Pages 배포 하나.**
+- ✅ **v0.2~v0.8 완료**(CHANGELOG). 계산 로직·저장·그린 테마·톡셈 브랜딩·Google 로그인·Firestore 다기기 동기화·**GitHub Pages 배포**까지 실동작. **핵심 기능 단계는 전부 끝. 남은 건 다듬기.**
 - **작업 방식(공통)**:
   - **레퍼런스는 토스 하나**(§10). 절제·미니멀 — 장식/여러 색 지양, **그린 악센트 하나**. "덜어내는" 쪽 먼저.
   - **큰 변경 전엔 `cp css/style.css css/style.css.bak`로 백업**(git 아님) — 사용자가 자주 롤백함. 매 변경 후 8777에서 눈으로 확인(스크린샷). (JS 큰 변경 시 `.bak`도 활용 — 이번 세션에 state/main/auth 백업한 전례.)
   - **깊이감을 카드/회색 캔버스로 풀지 말 것**(§10, 이미 2번 거부됨).
-- **다음 할 일 (사용자가 명시한 순서)**:
-  1. **GitHub Pages 배포** — 마지막 남은 기능 단계. 정적이라 저장소 push + Pages 설정이면 끝. ⚠️ 배포 후 **Firebase 콘솔 Authentication → 승인된 도메인**에 GitHub Pages 도메인(`<id>.github.io`) 추가해야 로그인 동작(localhost만 기본 포함). config의 `authDomain`은 그대로 OK.
-  2. **로고/워드마크** — 톡셈(한글 메인) + Toksum(영문). 그린 톤. PWA 아이콘(설치 셸)으로도 이어짐. §10 미니멀 원칙 유지.
-  3. **디자인 다듬기** — 밋밋함(리듬·타이포 방향으로만), 설치형 PWA 셸(manifest/아이콘/세이프에어리어, 미적용), 퍼센트 선택 바텀시트(할인 %, overlay.js 재사용, 미구현), 방금 붙은 것들 톤 조정. ⚠️ 사용자가 "디자인이 뭔가 아쉽다"던 지점 새 눈으로 재점검.
+- ⚠️ **배포 후 미완 1건 — Firebase 승인 도메인**: 배포 도메인 `design-purim.github.io`를 **Firebase 콘솔(`toksum-107fe`) → Authentication → Settings → 승인된 도메인**에 추가해야 배포 사이트에서 Google 로그인 동작(기본은 localhost만). config의 `authDomain`(`toksum-107fe.firebaseapp.com`)은 그대로 OK. 콘솔 링크: https://console.firebase.google.com/project/toksum-107fe/authentication/settings — 사용자가 진행. (미확인 시 다음 세션에서 로그인 테스트로 확인.)
+- **다음 할 일 (사용자가 명시한 순서 — 이제 다듬기 단계)**:
+  1. **로고/워드마크** — 톡셈(한글 메인) + Toksum(영문). 그린 톤. PWA 아이콘(설치 셸)으로도 이어짐. §10 미니멀 원칙 유지.
+  2. **디자인 다듬기** — 밋밋함(리듬·타이포 방향으로만), 설치형 PWA 셸(manifest/아이콘/세이프에어리어, 미적용), 퍼센트 선택 바텀시트(할인 %, overlay.js 재사용, 미구현), 방금 붙은 것들 톤 조정. ⚠️ 사용자가 "디자인이 뭔가 아쉽다"던 지점 새 눈으로 재점검.
+- **배포 워크플로우(신규)**: 코드 수정 → 프로젝트 루트에서 `git push`(remote `origin` = `design-purim/toksum`, HTTPS + gh 자격증명) → Pages 자동 재빌드(1~2분). `gh` CLI는 `~/.local/bin/gh`(PATH 미등록, 전체 경로로 호출). 커밋에 `.bak`은 `.gitignore`로 제외됨.
 - **미리보기 브라우저가 사용자 계정으로 로그인돼 있을 수 있음** — 이 경우 폴더/메뉴 편집이 **사용자 실제 Firestore 데이터에 반영**되니, 테스트는 저장 안 하고 입력만 확인하거나 되돌릴 것.
 
 ## 9. 빠른 시작 체크리스트 (새 세션)
