@@ -1,0 +1,224 @@
+// ===== 앱 진입점 (Entry Point) =====
+// 상태(state)와 뷰(ui)를 연결하고, 사용자 입력(클릭)을 각 기능으로 라우팅합니다.
+// 계산 로직·실행취소·저장 등은 이후 단계에서 이 라우터에 케이스를 추가합니다.
+
+import {
+  state,
+  subscribe,
+  addItem,
+  addMenuItem,
+  toggleItem,
+  removeItem,
+  clearItems,
+  undo,
+  selectedTotal,
+  saveFolders,
+} from "./state.js";
+import { mountApp, render, toggleFolder } from "./ui.js";
+import { openMenuSettings } from "./modules/menuSettings.js";
+import { showToast } from "./modules/toast.js";
+import { initAuth, openAccountSheet } from "./modules/auth.js";
+import { saveUserFolders } from "./modules/cloud.js";
+import { attachAmountFormatting, parseAmount } from "./format.js";
+
+const wonFmt = (n) => `${Number(n).toLocaleString("ko-KR")}원`;
+
+const root = document.getElementById("app");
+
+function init() {
+  mountApp(root);
+  render(root);
+
+  // 상태가 바뀌면: 메뉴 설정(폴더) 저장 + 화면 갱신
+  // (items 변경 시에도 폴더를 다시 저장하지만 동일 데이터라 부담 없음)
+  subscribe(() => {
+    saveFolders(); // LocalStorage는 회원/비회원 공통으로 항상 저장(오프라인 대비)
+    render(root);
+    maybeSyncFoldersToCloud(); // 회원이면 폴더 변경분을 Firestore에도 저장(디바운스)
+  });
+
+  // 금액 인풋: 입력 즉시 천단위 콤마 + 맨 앞 0 제거
+  attachAmountFormatting(root.querySelector('[data-input="amount"]'));
+
+  // 클릭 이벤트를 한곳에서 위임 처리
+  root.addEventListener("click", onClick);
+
+  // 체크박스는 click 대신 change로 처리(라벨 클릭 이중발화 방지)
+  root.addEventListener("change", (e) => {
+    const cb = e.target.closest('[data-action="toggle-item"]');
+    if (!cb) return;
+    const id = e.target.closest(".list-item")?.dataset.itemId;
+    if (id) toggleItem(id);
+  });
+
+  // 헤더: 스크롤 시에만 하단 hairline 표시 (토스·iOS 패턴)
+  const header = root.querySelector(".app-header");
+  const onScroll = () => header.classList.toggle("is-scrolled", window.scrollY > 24);
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+
+  // Firebase 로그인 초기화(설정돼 있으면 세션 복원 → 헤더 아바타 자동 표시)
+  initAuth();
+}
+
+// 회원이면 폴더(메뉴 설정) 변경분을 Firestore에 저장.
+//  - folders가 실제로 바뀐 경우에만(직전 저장분과 JSON 비교) → items 변경엔 안 씀
+//  - 800ms 디바운스로 연속 편집(타이핑·드래그)을 한 번의 쓰기로 묶음
+let lastSyncedFoldersJson = null;
+let cloudSaveTimer = null;
+function maybeSyncFoldersToCloud() {
+  const user = state.user;
+  if (!user) return; // 비회원은 LocalStorage만
+  const json = JSON.stringify(state.folders);
+  if (json === lastSyncedFoldersJson) return; // 폴더 변화 없음(예: items만 바뀜)
+  lastSyncedFoldersJson = json;
+  clearTimeout(cloudSaveTimer);
+  cloudSaveTimer = setTimeout(() => {
+    saveUserFolders(user.uid, state.folders).catch((e) =>
+      console.error("[cloud] 폴더 저장 실패", e)
+    );
+  }, 800);
+}
+
+function onClick(e) {
+  const el = e.target.closest("[data-action]");
+  if (!el) return;
+  const action = el.dataset.action;
+
+  switch (action) {
+    case "open-menu":
+      openMenuSettings();
+      break;
+    case "toggle-folder":
+      // UI 전용 토글(상태 변경 아님) → 직접 재렌더
+      toggleFolder(el.dataset.folderId);
+      render(root);
+      break;
+    case "add-menu":
+      // 메뉴 칩 클릭 → 목록에 추가
+      addMenuItem(el.dataset.menuId);
+      break;
+    case "add-direct":
+      // 직접입력(금액/메모) → 목록에 추가
+      handleAddDirect();
+      break;
+    case "half":
+      // 50% 추가 → 입력액의 절반을 목록에 추가
+      handleHalf();
+      break;
+    case "discount":
+      // 할인 → 입력액을 마이너스로 목록에 추가
+      handleDiscount();
+      break;
+    case "copy":
+      // 견적 복사 → 클립보드 + 토스트
+      handleCopy();
+      break;
+    case "remove-item": {
+      const id = el.closest(".list-item")?.dataset.itemId;
+      if (id) removeItem(id);
+      break;
+    }
+    case "undo":
+      // 마지막 변경 되돌리기
+      undo();
+      break;
+    case "clear":
+      // 목록 비우기(실행취소로 복구 가능)
+      handleClear();
+      break;
+    case "open-account":
+      // 계정 바텀시트 (로그인/로그아웃)
+      openAccountSheet(state.user);
+      break;
+    default:
+      break;
+  }
+}
+
+// 직접입력 영역의 금액/메모를 읽어옵니다.
+function readDirectInput() {
+  const amountEl = root.querySelector('[data-input="amount"]');
+  const memoEl = root.querySelector('[data-input="memo"]');
+  // 표시용 콤마를 제거하고 숫자로 변환
+  return {
+    amountEl,
+    memoEl,
+    amount: parseAmount(amountEl.value),
+    memo: memoEl.value.trim(),
+  };
+}
+
+function clearDirectInput(amountEl, memoEl) {
+  amountEl.value = "";
+  memoEl.value = "";
+  amountEl.focus();
+}
+
+// +추가 → 입력액 그대로 목록에 추가
+function handleAddDirect() {
+  const { amountEl, memoEl, amount, memo } = readDirectInput();
+  if (!amount) return void amountEl.focus();
+  addItem({ name: memo || "직접입력", amount, type: "direct" });
+  clearDirectInput(amountEl, memoEl);
+}
+
+// 50% 추가 → 입력액의 절반(반올림)을 목록에 추가
+function handleHalf() {
+  const { amountEl, memoEl, amount, memo } = readDirectInput();
+  if (!amount) return void amountEl.focus();
+  addItem({ name: memo || "50%", amount: Math.round(amount * 0.5), type: "half" });
+  clearDirectInput(amountEl, memoEl);
+}
+
+// − 할인 → 입력액을 마이너스로 목록에 추가
+function handleDiscount() {
+  const { amountEl, memoEl, amount, memo } = readDirectInput();
+  if (!amount) return void amountEl.focus();
+  addItem({ name: memo || "할인", amount: -Math.abs(amount), type: "discount" });
+  clearDirectInput(amountEl, memoEl);
+}
+
+// 복사 → 체크된 항목 + 합계를 텍스트로 만들어 클립보드에 복사
+async function handleCopy() {
+  const selected = state.items.filter((it) => it.selected);
+  if (selected.length === 0) return void showToast("복사할 항목이 없어요");
+
+  const lines = selected.map((it) => `${it.name}  ${wonFmt(it.amount)}`);
+  const text = `${lines.join("\n")}\n\n합계  ${wonFmt(selectedTotal())}`;
+
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch {
+    fallbackCopy(text); // 클립보드 API 불가 시 폴백
+  }
+  showToast("견적을 복사했어요");
+}
+
+// 비우기 → 목록 전체 삭제 후 안내(↶로 복구 가능)
+function handleClear() {
+  if (state.items.length === 0) return;
+  clearItems();
+  showToast("목록을 비웠어요");
+}
+
+// navigator.clipboard를 못 쓰는 환경용 폴백(임시 textarea + execCommand)
+function fallbackCopy(text) {
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.position = "fixed";
+  ta.style.opacity = "0";
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand("copy");
+  } catch {
+    /* 무시 */
+  }
+  ta.remove();
+}
+
+init();
+
+// 개발 편의: 콘솔에서 상태 확인용
+window.__state = state;

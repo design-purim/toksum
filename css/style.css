@@ -1,0 +1,1130 @@
+/* ===== Design Tokens (Toss-style) ===== */
+:root {
+  /* Toss 그레이 스케일 */
+  --gray-50: #f9fafb;
+  --gray-100: #f2f4f6;
+  --gray-200: #e5e8eb;
+  --gray-300: #d1d6db;
+  --gray-400: #b0b8c1;
+  --gray-500: #8b95a1;
+  --gray-600: #6b7684;
+  --gray-700: #4e5968;
+  --gray-800: #333d4b;
+  --gray-900: #191f28;
+
+  --bg: #f9fafb;
+  --surface: #ffffff;
+  --border: #e5e8eb;
+  --text: #191f28;
+  --text-sub: #8b95a1;
+
+  /* 메인 컬러 — 밝고 청량한 에메랄드 그린(흰 글씨 대비 유지 상한 근처) */
+  --primary: #0ca678;
+  --primary-press: #099268;
+  --primary-weak: #e6f9f1;
+
+  /* 반값(½) — '추가' 계열임을 암시하는 연그린 톤(primary와 동일 계열) */
+  --half: #0ca678;
+  --half-weak: #e6f9f1;
+  --half-weak-press: #d0f2e4;
+
+  /* 할인(마이너스) — 토스 레드 */
+  --discount: #f04452;
+  --discount-weak: #feecec;
+  --minus: #f04452;
+
+  --radius-lg: 20px;
+  --radius: 16px;
+  --radius-sm: 12px;
+  --header-h: 56px;
+  --footer-h: 72px;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-up: 0 -2px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* ===== Icons ===== */
+.icon {
+  display: inline-block;
+  vertical-align: middle;
+  flex: none;
+}
+
+/* ===== Reset & Base ===== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: "Wanted Sans Variable", "Wanted Sans", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  background: var(--bg);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+}
+
+input {
+  font: inherit;
+  color: inherit;
+}
+
+/* ===== App Shell ===== */
+#app {
+  max-width: 720px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* ===== Header ===== */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  height: var(--header-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 8px 0 16px; /* 타이틀을 본문(16px)에 정렬 */
+  /* iOS식 반투명 블러 내비바 — 콘텐츠가 아래로 흐릿하게 지나감(앱 화면 느낌) */
+  background: rgba(255, 255, 255, 0.72);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid transparent; /* 평소엔 선 없음 */
+  transition: border-color 0.2s ease;
+}
+
+/* 스크롤 시에만 얇은 hairline (토스·iOS 패턴) */
+.app-header.is-scrolled {
+  border-bottom-color: var(--gray-100);
+}
+
+/* 내비바 축소 타이틀 — 평소 숨김, 스크롤 시 페이드 인(iOS 라지 타이틀 패턴) */
+.nav-title {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+}
+
+.app-header.is-scrolled .nav-title {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 콘텐츠 상단 라지 타이틀 — 스크롤하면 내비바 밑으로 자연스럽게 사라짐 */
+.large-title {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  padding: 0 2px;
+  margin-bottom: -14px; /* app-main gap(28)과 상쇄해 입력에 ~14px로 붙임 */
+}
+
+.icon-btn {
+  min-width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  color: var(--gray-700);
+  font-size: 20px;
+  line-height: 1;
+  transition: background 0.15s;
+}
+
+.icon-btn {
+  transition: background 0.15s, transform 0.1s ease;
+}
+
+.icon-btn:active {
+  background: var(--gray-100);
+  transform: scale(0.9);
+}
+
+.icon-btn:disabled {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.header-btn {
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 8px;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--gray-700);
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+
+.header-btn:active {
+  background: var(--gray-100);
+  color: var(--gray-900);
+}
+
+/* ===== Main ===== */
+.app-main {
+  flex: 1;
+  padding: 12px 16px;
+  padding-bottom: calc(var(--footer-h) + 24px);
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* 섹션 헤더 (제목 + 우측 액션) — 메인/설정 공용 */
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding: 0 2px;
+}
+
+.section-head-title {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.section-head-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  color: var(--gray-500);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 4px 2px 4px 8px;
+}
+
+.section-head-action:active {
+  color: var(--gray-700);
+}
+
+/* ===== Direct Input ===== */
+.field-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.field {
+  flex: 1;
+  min-width: 0;
+  padding: 14px 16px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--gray-100);
+  transition: box-shadow 0.15s, background 0.15s;
+}
+
+.field::placeholder {
+  color: var(--gray-400);
+}
+
+.field:focus {
+  outline: none;
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1.5px var(--primary);
+}
+
+.action-row {
+  display: flex;
+  gap: 8px;
+}
+
+.btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 14px 8px;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 15px;
+  transition: transform 0.1s ease, background 0.15s;
+}
+
+.btn:active {
+  transform: scale(0.96);
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+}
+
+.btn-primary:active {
+  background: var(--primary-press);
+}
+
+/* 보조 액션 — 화면당 강조 1개 원칙: 채운 색은 primary뿐, 나머지는 회색 tonal + 컬러 텍스트 */
+.btn-half {
+  background: var(--gray-100);
+  color: var(--primary);
+}
+
+.btn-half:active {
+  background: var(--gray-200);
+}
+
+.btn-discount {
+  background: var(--gray-100);
+  color: var(--discount);
+}
+
+.btn-discount:active {
+  background: var(--gray-200);
+}
+
+/* ===== Folders / Menus ===== */
+.folders {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 펼친 폴더: 칩까지 있는 '그룹'이라 넉넉히 벌려 그룹 리듬(22) */
+.folder {
+  margin-bottom: 22px;
+}
+
+/* 접힌 폴더: 한 줄짜리 행이므로 헤더(12)보다 살짝 붙여 리스트처럼 촘촘하게(10) */
+.folder.is-collapsed {
+  margin-bottom: 10px;
+}
+
+.folder:last-child {
+  margin-bottom: 0;
+}
+
+/* 폴더 헤더 — 탭하면 접힘/펼침(iOS 설정 패턴). 컨트롤답게 또렷한 행 */
+.folder-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--gray-800);
+  margin-bottom: 8px;
+  padding: 7px 6px;
+  border-radius: 10px;
+  transition: background 0.12s;
+}
+
+.folder-name:active {
+  background: var(--gray-100);
+}
+
+.folder-label {
+  margin-right: auto; /* 개수·캐럿을 오른쪽으로 밀어냄 */
+}
+
+.folder-count {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-400);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 캐럿: 펼침 = 위(⌃, 접을 수 있음), 접힘 = 아래(⌄, 펼칠 수 있음) */
+.folder-caret {
+  color: var(--gray-400);
+  transform: rotate(180deg); /* 기본(펼침)엔 위를 가리킴 */
+  transition: transform 0.2s ease;
+}
+
+.folder.is-collapsed .folder-caret {
+  transform: rotate(0deg); /* 접히면 아래(chevron-down 원본) */
+}
+
+.folder.is-collapsed .menu-grid {
+  display: none;
+}
+
+.folder.is-collapsed .folder-name {
+  margin-bottom: 0;
+}
+
+.folder-icon {
+  color: var(--gray-500);
+}
+
+/* 메뉴 칩 — 가로 pill, 줄바꿈 흐름(개수 늘어도 컴팩트). 토스 빠른선택 칩 패턴 */
+.menu-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.menu-btn {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+  padding: 9px 14px;
+  border: none;
+  border-radius: var(--radius-sm); /* 인풋·버튼과 동일한 컨트롤 라운드(12px)로 통일 */
+  background: var(--gray-100);
+  transition: transform 0.1s ease, background 0.15s, color 0.15s;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.menu-btn:active {
+  transform: scale(0.96);
+  background: var(--primary-weak);
+}
+
+.menu-btn:active .menu-btn-name {
+  color: var(--primary);
+}
+
+.menu-btn-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--gray-800);
+  transition: color 0.15s;
+}
+
+.menu-btn-price {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gray-400);
+  letter-spacing: -0.01em;
+}
+
+/* 빈 메뉴(신규 사용자) 온보딩 안내 */
+.menu-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 28px 12px;
+  text-align: center;
+}
+
+.menu-empty-text {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--gray-600);
+}
+
+.menu-empty-sub {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--gray-400);
+}
+
+.menu-empty-icon {
+  vertical-align: middle;
+}
+
+/* ===== List ===== */
+.list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* 빈 상태 — 남은 영역 중앙에 아이콘 + 다음 행동 유도(토스·iOS 패턴) */
+.list-empty {
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px 0;
+  text-align: center;
+}
+
+.list-empty .empty-icon {
+  color: var(--gray-300);
+  margin-bottom: 2px;
+}
+
+.list-empty .empty-text {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--gray-600);
+}
+
+.list-empty .empty-sub {
+  font-size: 13px;
+  color: var(--gray-400);
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--gray-100);
+  transition: background 0.15s;
+}
+
+.list-item.is-selected {
+  background: var(--primary-weak);
+}
+
+/* 커스텀 체크박스 — 네이티브 input은 겹쳐 숨기고(포커스·접근성 유지) span으로 그림 */
+.list-check {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  cursor: pointer;
+}
+
+.list-check input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.list-check .checkbox {
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  border: 2px solid var(--gray-300);
+  background: var(--surface);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s ease;
+}
+
+.list-check .checkbox .icon {
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 0.12s ease, transform 0.12s ease;
+}
+
+.list-check input:checked + .checkbox {
+  background: var(--primary);
+  border-color: var(--primary);
+}
+
+.list-check input:checked + .checkbox .icon {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.list-check input:active + .checkbox {
+  transform: scale(0.9);
+}
+
+.list-check input:focus-visible + .checkbox {
+  box-shadow: 0 0 0 3px var(--primary-weak);
+}
+
+.list-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.list-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--gray-900);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.list-memo {
+  font-size: 12px;
+  color: var(--text-sub);
+}
+
+.list-amount {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--gray-900);
+  white-space: nowrap;
+}
+
+.list-amount.is-minus {
+  color: var(--minus);
+}
+
+.list-remove {
+  min-width: 32px;
+  height: 32px;
+  font-size: 14px;
+  color: var(--gray-400);
+}
+
+/* ===== Toast ===== */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--footer-h) + 24px);
+  z-index: 100;
+  max-width: calc(100% - 32px);
+  padding: 12px 18px;
+  border-radius: var(--radius-sm);
+  background: var(--gray-900);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 12px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.toast.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* ===== Total Bar (Fixed Footer) ===== */
+.total-bar {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  height: var(--footer-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px 0 20px;
+  /* iOS식 반투명 블러 하단 바 — 콘텐츠가 아래로 흐릿하게 지나감 */
+  background: rgba(255, 255, 255, 0.8);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  border-top: 1px solid var(--gray-100);
+}
+
+.total-amount {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+}
+
+.total-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--gray-500);
+  letter-spacing: -0.01em;
+}
+
+.total-value {
+  font-size: 23px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.total-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* 유틸(실행취소·비우기)은 조용한 아이콘 */
+.total-actions .icon-btn {
+  color: var(--gray-500);
+}
+
+/* 복사 — 하단바의 액션 히어로(고정 CTA). 이 앱의 최종 목적 */
+.btn-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 42px;
+  padding: 0 18px;
+  margin-left: 4px;
+  border-radius: var(--radius-sm); /* 12px 컨트롤 라운드 통일 */
+  background: var(--primary);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  transition: transform 0.1s ease, background 0.15s;
+}
+
+.btn-copy:active {
+  transform: scale(0.96);
+  background: var(--primary-press);
+}
+
+/* ===== Full Page (메뉴 설정 등) ===== */
+.page {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--surface);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  opacity: 0;
+  transform: translateX(24px);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+.page.is-open {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.page > .settings {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* ===== Overlay ===== */
+.overlay-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.overlay-backdrop.is-open {
+  opacity: 1;
+}
+
+.overlay-panel {
+  width: 100%;
+  max-width: 720px;
+  max-height: 90vh;
+  background: var(--surface);
+  border-radius: 16px 16px 0 0;
+  overflow-y: auto;
+  transform: translateY(16px);
+  transition: transform 0.2s ease;
+}
+
+.overlay-backdrop.is-open .overlay-panel {
+  transform: translateY(0);
+}
+
+@media (min-width: 768px) {
+  .overlay-backdrop {
+    align-items: center;
+  }
+  .overlay-panel {
+    max-height: 80vh;
+    border-radius: 16px;
+  }
+}
+
+/* ===== Settings Page ===== */
+.settings-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: var(--header-h);
+  padding: 0 8px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.settings-title {
+  flex: 1;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.settings-header-spacer {
+  width: 40px;
+  flex: none;
+}
+
+.settings-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.settings-mode-btn {
+  font-size: 14px;
+  padding: 0 10px;
+}
+
+.settings-empty {
+  text-align: center;
+  color: var(--gray-400);
+  font-size: 14px;
+  padding: 32px 0;
+}
+
+/* 폴더: 카드 대신 iOS 그룹 리스트 스타일(섹션 헤더 + 묶음 리스트) */
+.settings-folder-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 4px;
+  margin-bottom: 10px;
+}
+
+.settings-folder-name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 700;
+  font-size: 17px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.folder-icon {
+  color: var(--gray-500);
+}
+
+.folder-more {
+  min-width: 40px;
+  height: 40px;
+  color: var(--gray-500);
+}
+
+/* 메뉴 묶음 컨테이너 */
+.settings-menu-list {
+  background: var(--gray-50);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.settings-menu-item + .settings-menu-item {
+  border-top: 1px solid var(--gray-100);
+}
+
+/* 탭 가능한 메뉴 행 */
+.menu-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px 14px 15px 16px;
+  text-align: left;
+  transition: background 0.12s;
+}
+
+.menu-row:active {
+  background: var(--gray-100);
+}
+
+.menu-row-chevron {
+  color: var(--gray-300);
+  flex: none;
+}
+
+.settings-menu-name {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 500;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.settings-menu-price {
+  font-size: 15px;
+  color: var(--gray-600);
+}
+
+.settings-menu-empty {
+  font-size: 14px;
+  color: var(--gray-400);
+  padding: 16px;
+}
+
+/* "+ 메뉴 추가" 행 */
+.add-menu-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 10px;
+  margin-left: 4px;
+  padding: 6px 4px;
+  color: var(--primary);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.add-menu-row:active {
+  opacity: 0.6;
+}
+
+/* 정렬(드래그) 모드의 메뉴 행 */
+.settings-menu-item.is-reorder {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 12px;
+}
+
+.add-folder-form {
+  display: flex;
+  gap: 8px;
+}
+
+.add-folder-form .field {
+  flex: 1;
+}
+
+.add-folder-form .btn {
+  flex: none;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+/* ===== Bottom Sheet (메뉴/폴더 수정) ===== */
+.sheet {
+  padding: 10px 20px 24px;
+}
+
+.sheet-handle {
+  width: 40px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--gray-200);
+  margin: 0 auto 16px;
+}
+
+.sheet-title {
+  font-size: 19px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.sheet-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sheet-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sheet-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gray-600);
+  padding-left: 2px;
+}
+
+.sheet .field {
+  flex: none;
+  width: 100%;
+}
+
+.btn-lg {
+  width: 100%;
+  padding: 16px;
+  font-size: 16px;
+  margin-top: 4px;
+}
+
+.btn-text-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px;
+  color: var(--discount);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.btn-text-danger:active {
+  opacity: 0.6;
+}
+
+/* ===== Account / Login ===== */
+/* 헤더 아바타 — 로그인하면 사람 아이콘 대신 프로필 사진/이니셜 원형으로 */
+.account-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  object-fit: cover;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.account-btn.is-signed-in {
+  padding: 0;
+}
+
+/* 계정 바텀시트 */
+.account-sheet {
+  text-align: center;
+}
+
+.account-intro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 0 24px;
+}
+
+.account-avatar-lg {
+  width: 64px;
+  height: 64px;
+  font-size: 26px;
+  margin-bottom: 6px;
+}
+
+/* 로그인 전 빈 아바타 — 회색 톤(파랑은 로그인 후 강조로 아껴둠) */
+.account-avatar-lg.is-empty {
+  background: var(--gray-100);
+  color: var(--gray-400);
+}
+
+.account-title {
+  margin-bottom: 0;
+}
+
+.account-desc {
+  font-size: 14px;
+  color: var(--gray-500);
+  letter-spacing: -0.01em;
+  word-break: keep-all;
+}
+
+/* Google 로그인 버튼 — 브랜드 가이드라인 표준(흰 배경 + 회색 테두리 + 원본 G 로고) */
+.btn-google {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 15px;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--gray-800);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  transition: background 0.15s, transform 0.1s ease;
+}
+
+.btn-google:active {
+  background: var(--gray-50);
+  transform: scale(0.98);
+}
+
+.google-logo {
+  flex: none;
+}
+
+/* 로그아웃 — 파괴적 동작이 아니라 조용한 회색 텍스트 버튼 */
+.btn-account-out {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  color: var(--gray-600);
+  font-size: 15px;
+  font-weight: 600;
+  transition: background 0.15s;
+}
+
+.btn-account-out:active {
+  background: var(--gray-100);
+}
+
+/* ===== Drag (SortableJS) ===== */
+.settings-folder-list {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.drag-handle {
+  min-width: 40px;
+  height: 40px;
+  color: var(--gray-400);
+  cursor: grab;
+  touch-action: none; /* 모바일에서 드래그 중 스크롤 방지 */
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.settings-folder-head .folder-drag {
+  margin-left: -4px;
+}
+
+.drag-ghost {
+  opacity: 0.4;
+}
+
+.drag-chosen {
+  background: var(--primary-weak);
+}
+
+/* ===== Responsive ===== */
+@media (min-width: 768px) {
+  #app {
+    box-shadow: 0 0 24px rgba(0, 0, 0, 0.06);
+  }
+}

@@ -1,0 +1,11 @@
+# 롤백용 백업 (git 아님, HANDOFF §8)
+*.bak
+
+# macOS
+.DS_Store
+
+# Claude Code 로컬 설정
+.claude/
+
+# 파이썬 dev 서버 캐시
+__pycache__/
