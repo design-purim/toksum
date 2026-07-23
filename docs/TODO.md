@@ -8,4 +8,13 @@
 - [x] LocalStorage
 - [x] Firebase 로그인 (Google, 프로젝트 toksum-107fe · v0.6)
 - [x] Firestore (로그인 사용자 메뉴 설정 동기화 · v0.7, 다기기 검증됨)
-- [ ] GitHub Pages 배포 (마지막 남은 큰 단계)
+- [x] GitHub Pages 배포 (v0.8 · 라이브 https://design-purim.github.io/toksum/)
+- [x] 로고 / 브랜드 마크 ("T·" 심볼 + 헤더 락업 + 파비콘 · v0.9, 스펙 DESIGN.md §5)
+
+## 남은 것 (다듬기 단계)
+
+- [ ] Firebase 승인 도메인에 `design-purim.github.io` 추가 (콘솔 작업 — 안 하면 배포 사이트 로그인 안 됨)
+- [ ] PWA 설치 셸 (manifest · 세이프에어리어 · 로고 PNG 아이콘 192/512·maskable · apple-touch PNG)
+- [ ] 디자인 다듬기 (밋밋함 — 리듬·타이포 방향)
+- [ ] "톡! 터치" 모션 (스플래시/버튼 리플 — 로고엔 안 넣기로 결정)
+- [ ] 퍼센트 선택 바텀시트 (할인 %, overlay.js 재사용 · 미구현)

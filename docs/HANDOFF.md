@@ -1,7 +1,7 @@
 # HANDOFF — 세션 인수인계 문서
 
 > 완전히 새 세션에서도 작업을 매끄럽게 이어갈 수 있도록 정리한 문서.
-> 최종 갱신: 2026-07-23 (**톡셈** — 범용 견적기, 정적 PWA) — **GitHub Pages 배포 완료**(v0.8). 라이브: https://design-purim.github.io/toksum/ · 저장소: `design-purim/toksum`(Public). 그 전: v0.7 Firestore 동기화, v0.6 톡셈 브랜딩+그린 테마+Firebase 로그인, v0.5 계산 로직·저장 (CHANGELOG 참고).
+> 최종 갱신: 2026-07-24 (**톡셈** — 범용 견적기, 정적 PWA) — **로고/브랜드 마크 확정**(v0.9): "T·" 심볼(잉크 T + 초록 탭닷) + 헤더 락업 + 파비콘(다크 사각). 타이틀 "톡톡 눌러 셈". 로고 스펙은 DESIGN.md §5. 그 전: v0.8 GitHub Pages 배포(라이브 https://design-purim.github.io/toksum/ · 저장소 `design-purim/toksum` Public), v0.7 Firestore 동기화, v0.6 톡셈 브랜딩+그린 테마+Firebase 로그인, v0.5 계산 로직·저장 (CHANGELOG 참고).
 >
 > 📛 **앱 이름 = 톡셈** (영문 **Toksum** — Tok 톡톡 누르기 + sum 셈·합계). "톡톡 눌러 셈한다". ⚠️ **표지 전용이 아니라 업종 불문 "항목 눌러 빠르게 견적" 범용 툴**로 포지셔닝(사용자 확정). 기존 "표지 디자인 견적 계산기" 표현은 레거시.
 
@@ -13,7 +13,7 @@
 
 ## 0. 한 줄 요약
 
-**톡셈** — 미리 등록한 항목(메뉴)을 톡톡 눌러 빠르게 견적을 만들고 복사하는 모바일 우선 정적 웹앱(HTML/CSS/Vanilla JS + Firebase + GitHub Pages). 업종 불문 범용. **디자인·구조 + 계산 로직(추가·50%·할인·체크합계·복사·실행취소·비우기) + 그린 테마 + Firebase Google 로그인 + Firestore 다기기 동기화(회원 메뉴 설정) + GitHub Pages 배포까지 완료.** 라이브: https://design-purim.github.io/toksum/ . **핵심 기능 단계는 모두 끝났고, 남은 건 다듬기(로고/PWA 셸/디자인).** ⚠️ 로그인이 배포 도메인에서 되려면 Firebase 승인 도메인 추가 필요 — §8 참고.
+**톡셈** — 미리 등록한 항목(메뉴)을 톡톡 눌러 빠르게 견적을 만들고 복사하는 모바일 우선 정적 웹앱(HTML/CSS/Vanilla JS + Firebase + GitHub Pages). 업종 불문 범용. **디자인·구조 + 계산 로직(추가·50%·할인·체크합계·복사·실행취소·비우기) + 그린 테마 + Firebase Google 로그인 + Firestore 다기기 동기화(회원 메뉴 설정) + GitHub Pages 배포 + 로고/브랜드 마크까지 완료.** 라이브: https://design-purim.github.io/toksum/ . **핵심 기능·배포·로고 모두 끝났고, 남은 건 다듬기(PWA 설치 셸/디자인 리듬/모션).** ⚠️ 로그인이 배포 도메인에서 되려면 Firebase 승인 도메인 추가 필요 — §8 참고.
 
 ## 1. 기술 스택 / 제약
 

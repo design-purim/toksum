@@ -3,6 +3,8 @@
 **톡톡 눌러 셈한다** — 미리 등록한 항목을 눌러 빠르게 견적을 만들고 복사하는 범용 견적기(PWA).
 "Tok"(톡톡 누르기) + "sum"(셈·합계). 업종 불문(표지 디자인·촬영·인테리어·과외 등 무엇이든 메뉴만 자기 걸로).
 
+🌐 **라이브: https://design-purim.github.io/toksum/**
+
 ## 주요 기능
 
 - **빠른 견적** — 메뉴 칩을 눌러 항목 담기 · 직접입력(+추가) · 50% 추가 · 할인(−)
@@ -21,7 +23,7 @@ python3 nocache_server.py   # http://localhost:8777
 
 ## 기술
 
-HTML5 / CSS3 / **Vanilla JS(ES Modules)** · Firebase Auth + Firestore · GitHub Pages 배포 예정.
+HTML5 / CSS3 / **Vanilla JS(ES Modules)** · Firebase Auth + Firestore · GitHub Pages 배포됨.
 라이브러리는 완전 무료 원칙 — 아이콘(Lucide) 인라인 내장, 드래그(SortableJS) 자체호스팅, 폰트(Wanted Sans, OFL). 디자인 톤은 토스 참고, 메인 컬러 에메랄드 그린.
 
 ## 문서
