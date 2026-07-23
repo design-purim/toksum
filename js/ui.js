@@ -7,6 +7,10 @@ import { icon } from "./icons.js";
 
 const won = (n) => `${Number(n).toLocaleString("ko-KR")}원`;
 
+// 브랜드 심볼 "T·" — 잉크 T(currentColor) + 초록 탭닷(--primary). 좌표는 로고 확정 스펙.
+const brandSymbol = `<svg class="logo-sym" viewBox="20 22 60 64" aria-hidden="true"><rect class="ink" x="24" y="25" width="52" height="13" rx="6.5"/><rect class="ink" x="43.5" y="25" width="13" height="36" rx="6.5"/><circle class="dot" cx="50" cy="76" r="7.5"/></svg>`;
+const brandLockup = `<span class="brand">${brandSymbol}<span class="brand-text">톡셈</span></span>`;
+
 // 폴더 접힘 상태 (UI 전용 — 데이터 모델/저장에는 넣지 않음)
 const collapsedFolders = new Set();
 
@@ -19,12 +23,12 @@ export function toggleFolder(id) {
 export function mountApp(root) {
   root.innerHTML = `
     <header class="app-header">
-      <span class="nav-title" aria-hidden="true">톡셈</span>
+      <span class="nav-title" aria-hidden="true">${brandLockup}</span>
       <button class="icon-btn account-btn" data-action="open-account" data-bind="account" aria-label="로그인 / 계정">${icon("account")}</button>
     </header>
 
     <main class="app-main">
-      <h1 class="large-title">톡셈</h1>
+      <h1 class="large-title">${brandLockup}</h1>
       <section class="direct-input" aria-label="직접입력">
         <div class="field-row">
           <input class="field" type="text" inputmode="numeric" pattern="[0-9,]*"

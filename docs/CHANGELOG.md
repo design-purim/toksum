@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## v0.9 — 로고 / 브랜드 마크 (2026-07-23)
+> "T·" 심볼(잉크 T + 초록 탭닷) 확정 → 헤더 로고 락업 + 파비콘 + 앱아이콘 에셋. 상세 스펙은 DESIGN.md §5.
+
+- **심볼 "T·"** — 잉크 T(#191F28)가 초록 탭닷(#0CA678)을 "톡 누르는" 형태. GPT 초안(T+점)을 벡터로 재제작·정교화(세로획 줄임, 점 위로, 정확한 에메랄드).
+- **가로 락업 원리 반영** — 심볼 실루엣=글자높이·수직 중앙정렬(실무 표준, Android/Akrivi 가이드 근거). 심볼:글자 = 32.5:34, 간격 글자비율. 초기엔 심볼을 글자보다 크게 뽑았다가(비표준) 되돌림.
+- **헤더 적용** — `ui.js` `brandSymbol`/`brandLockup` 상수, 라지타이틀·스크롤 내비타이틀 둘 다 락업으로. 잉크 T는 `currentColor` 상속, 점만 `--primary`. CSS `.brand`/`.logo-sym` 추가.
+- **에셋** — `assets/toksum-symbol.svg`(마크), `toksum-icon-green.svg`/`toksum-icon-dark.svg`(라운드 사각, 흰 글리프 중앙정렬), 루트 `favicon.svg`(그린). `index.html`에 `rel="icon"`(SVG)·`apple-touch-icon` 연결.
+- **결정** — "톡! 느낌"의 리플은 정적 로고에 넣지 않음(괄호처럼 보임) → 모션으로 살리기로. iOS/PWA용 PNG 아이콘은 래스터 필요 → PWA 셸 단계에서.
+
 ## v0.8 — GitHub Pages 배포 (2026-07-23)
 > **마지막 큰 단계 완료.** 정적 앱을 GitHub Pages에 배포 → 실제 URL로 접속 가능.
 

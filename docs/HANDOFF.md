@@ -149,8 +149,8 @@ docs/                 # SPEC/UI/TODO(초안) + DESIGN.md + HANDOFF.md(이 문서
   - **깊이감을 카드/회색 캔버스로 풀지 말 것**(§10, 이미 2번 거부됨).
 - ⚠️ **배포 후 미완 1건 — Firebase 승인 도메인**: 배포 도메인 `design-purim.github.io`를 **Firebase 콘솔(`toksum-107fe`) → Authentication → Settings → 승인된 도메인**에 추가해야 배포 사이트에서 Google 로그인 동작(기본은 localhost만). config의 `authDomain`(`toksum-107fe.firebaseapp.com`)은 그대로 OK. 콘솔 링크: https://console.firebase.google.com/project/toksum-107fe/authentication/settings — 사용자가 진행. (미확인 시 다음 세션에서 로그인 테스트로 확인.)
 - **다음 할 일 (사용자가 명시한 순서 — 이제 다듬기 단계)**:
-  1. **로고/워드마크** — 톡셈(한글 메인) + Toksum(영문). 그린 톤. PWA 아이콘(설치 셸)으로도 이어짐. §10 미니멀 원칙 유지.
-  2. **디자인 다듬기** — 밋밋함(리듬·타이포 방향으로만), 설치형 PWA 셸(manifest/아이콘/세이프에어리어, 미적용), 퍼센트 선택 바텀시트(할인 %, overlay.js 재사용, 미구현), 방금 붙은 것들 톤 조정. ⚠️ 사용자가 "디자인이 뭔가 아쉽다"던 지점 새 눈으로 재점검.
+  1. ✅ **로고/브랜드 마크 (v0.9, 완료)** — "T·" 심볼(잉크 T + 초록 탭닷) 확정, 헤더 락업·파비콘·앱아이콘 에셋까지. **확정 스펙·좌표·락업 원리는 DESIGN.md §5**. 임시 미리보기(`_logo_preview.html`)는 8777에서 반복 확인 후 삭제함(로고 다듬을 땐 같은 방식으로 임시 파일 만들어 확인). ⚠️ iOS `apple-touch-icon`·PWA maskable은 **PNG 필요**(지금 SVG만) → PWA 단계에서 생성.
+  2. **디자인 다듬기** — 밋밋함(리듬·타이포 방향으로만), 설치형 PWA 셸(manifest/아이콘/세이프에어리어, 미적용 — 로고 PNG도 여기서), 퍼센트 선택 바텀시트(할인 %, overlay.js 재사용, 미구현), 방금 붙은 것들 톤 조정. ⚠️ 사용자가 "디자인이 뭔가 아쉽다"던 지점 새 눈으로 재점검. **"톡! 터치 느낌"은 로고가 아니라 모션(스플래시/버튼 리플)으로** 살리기로 결정됨(리플을 정적 로고에 넣으면 지저분).
 - **배포 워크플로우(신규)**: 코드 수정 → 프로젝트 루트에서 `git push`(remote `origin` = `design-purim/toksum`, HTTPS + gh 자격증명) → Pages 자동 재빌드(1~2분). `gh` CLI는 `~/.local/bin/gh`(PATH 미등록, 전체 경로로 호출). 커밋에 `.bak`은 `.gitignore`로 제외됨.
 - **미리보기 브라우저가 사용자 계정으로 로그인돼 있을 수 있음** — 이 경우 폴더/메뉴 편집이 **사용자 실제 Firestore 데이터에 반영**되니, 테스트는 저장 안 하고 입력만 확인하거나 되돌릴 것.
 

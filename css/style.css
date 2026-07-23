@@ -144,6 +144,38 @@ input {
   margin-bottom: -14px; /* app-main gap(28)과 상쇄해 입력에 ~14px로 붙임 */
 }
 
+/* 브랜드 로고 락업 (심볼 "T·" + 톡셈) — 심볼:글자 = 32.5:34, 간격은 글자비율.
+   심볼 실루엣을 글자높이에 맞추고 수직 중앙정렬(실무 표준). 잉크 T는 currentColor로 문맥색 상속. */
+.brand {
+  display: inline-flex;
+  align-items: center;
+}
+.brand-text {
+  display: inline-block;
+}
+.logo-sym {
+  display: block;
+  flex: none;
+}
+.logo-sym .ink {
+  fill: currentColor;
+}
+.logo-sym .dot {
+  fill: var(--primary);
+}
+.large-title .logo-sym {
+  height: 27px;
+}
+.large-title .brand {
+  gap: 7px;
+}
+.nav-title .logo-sym {
+  height: 16px;
+}
+.nav-title .brand {
+  gap: 5px;
+}
+
 .icon-btn {
   min-width: 40px;
   height: 40px;
