@@ -15,6 +15,17 @@ export function formatAmount(n) {
   return num.toLocaleString("ko-KR");
 }
 
+// 숫자 → "12,000원". 합계 등 항상 금액으로 보여야 하는 곳에 사용.
+export function formatWon(n) {
+  return `${Number(n).toLocaleString("ko-KR")}원`;
+}
+
+// 숫자 → "12,000원", 단 0이면 "무료". 메뉴칩·견적 항목·복사 등 항목 단위 표시에 사용.
+// (합계에는 쓰지 않음 — 빈 목록 0원이 "무료"로 보이면 안 됨)
+export function formatWonOrFree(n) {
+  return Number(n) === 0 ? "무료" : formatWon(n);
+}
+
 // input에 실시간 포맷팅을 붙입니다.
 //  - 숫자만 남기고 천단위 콤마 삽입(1000 → 1,000)
 //  - 맨 앞 0 제거("" / 05 → 5)

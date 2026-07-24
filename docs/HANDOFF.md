@@ -1,7 +1,7 @@
 # HANDOFF — 세션 인수인계 문서
 
 > 완전히 새 세션에서도 작업을 매끄럽게 이어갈 수 있도록 정리한 문서.
-> 최종 갱신: 2026-07-24 (**톡셈** — 범용 견적기, 정적 PWA) — **견적 목록 개편 + 폴더 기본 접힘**(v0.10): ①폴더 "기본 열림/접힘" 설정(폴더 시트 토글, `collapsed` 필드) ②같은 메뉴 다시 누르면 **개수 합치기** + 행마다 `− n +` 스테퍼(단가×개수) ③견적 목록 **체크박스 제거**(합계·복사는 항상 전체, 빼려면 X) ④리스트를 **hairline 한 줄 행**으로(회색 채움 제거). ⚠️ **§10의 결정 3건이 이번에 뒤집힘**(접힘 저장, 합계 전체, hairline) — §10 참고. 그 전: v0.9 로고/브랜드 마크("T·" 심볼, DESIGN.md §5), v0.8 GitHub Pages 배포(라이브 https://design-purim.github.io/toksum/ · 저장소 `design-purim/toksum` Public), v0.7 Firestore 동기화, v0.6 톡셈 브랜딩+그린 테마+Firebase 로그인, v0.5 계산 로직·저장 (CHANGELOG 참고).
+> 최종 갱신: 2026-07-24 (**톡셈** — 범용 견적기, 정적 PWA) — **무료 메뉴**(v0.11): 메뉴 설정에 "무료" 토글 → `price:0`, 금액 0원인 곳은 어디서나 **"무료"** 표시(합계는 "0원" 유지). 그 전 같은 날: **견적 목록 개편 + 폴더 기본 접힘**(v0.10): ①폴더 "기본 열림/접힘" 설정(폴더 시트 토글, `collapsed` 필드) ②같은 메뉴 다시 누르면 **개수 합치기** + 행마다 `− n +` 스테퍼(단가×개수) ③견적 목록 **체크박스 제거**(합계·복사는 항상 전체, 빼려면 X) ④리스트를 **hairline 한 줄 행**으로(회색 채움 제거). ⚠️ **§10의 결정 3건이 이번에 뒤집힘**(접힘 저장, 합계 전체, hairline) — §10 참고. 그 전: v0.9 로고/브랜드 마크("T·" 심볼, DESIGN.md §5), v0.8 GitHub Pages 배포(라이브 https://design-purim.github.io/toksum/ · 저장소 `design-purim/toksum` Public), v0.7 Firestore 동기화, v0.6 톡셈 브랜딩+그린 테마+Firebase 로그인, v0.5 계산 로직·저장 (CHANGELOG 참고).
 >
 > 📛 **앱 이름 = 톡셈** (영문 **Toksum** — Tok 톡톡 누르기 + sum 셈·합계). "톡톡 눌러 셈한다". ⚠️ **표지 전용이 아니라 업종 불문 "항목 눌러 빠르게 견적" 범용 툴**로 포지셔닝(사용자 확정). 기존 "표지 디자인 견적 계산기" 표현은 레거시.
 
@@ -13,7 +13,7 @@
 
 ## 0. 한 줄 요약
 
-**톡셈** — 미리 등록한 항목(메뉴)을 톡톡 눌러 빠르게 견적을 만들고 복사하는 모바일 우선 정적 웹앱(HTML/CSS/Vanilla JS + Firebase + GitHub Pages). 업종 불문 범용. **디자인·구조 + 계산 로직(추가·50%·할인·체크합계·복사·실행취소·비우기) + 그린 테마 + Firebase Google 로그인 + Firestore 다기기 동기화(회원 메뉴 설정) + GitHub Pages 배포 + 로고/브랜드 마크까지 완료.** 라이브: https://design-purim.github.io/toksum/ . **핵심 기능·배포·로고 모두 끝났고, 남은 건 다듬기(PWA 설치 셸/디자인 리듬/모션).** ⚠️ 로그인이 배포 도메인에서 되려면 Firebase 승인 도메인 추가 필요 — §8 참고.
+**톡셈** — 미리 등록한 항목(메뉴)을 톡톡 눌러 빠르게 견적을 만들고 복사하는 모바일 우선 정적 웹앱(HTML/CSS/Vanilla JS + Firebase + GitHub Pages). 업종 불문 범용. **디자인·구조 + 계산 로직(추가·50%·할인·체크합계·복사·실행취소·비우기) + 그린 테마 + Firebase Google 로그인 + Firestore 다기기 동기화(회원 메뉴 설정) + GitHub Pages 배포 + 로고/브랜드 마크까지 완료.** 라이브: https://design-purim.github.io/toksum/ . **핵심 기능·배포·로고 모두 끝났고, 남은 건 다듬기(PWA 설치 셸/디자인 리듬/모션).** 배포 사이트 Google 로그인도 정상 동작(Firebase 승인 도메인 추가 완료).
 
 ## 1. 기술 스택 / 제약
 
@@ -82,9 +82,10 @@ docs/                 # SPEC/UI/TODO(초안) + DESIGN.md + HANDOFF.md(이 문서
 - [x] **LocalStorage 저장 (v0.5)** — **메뉴 설정(폴더/메뉴)만** 저장/복원(비회원). 견적 목록(items)은 저장 안 함(사용자 선택).
 - [x] **Firebase 로그인 (v0.6, 완료)** — Google 로그인 실동작. 프로젝트 `toksum-107fe`. 헤더 👤 → 계정 바텀시트(로그인/로그아웃), 로그인 시 프로필 아바타.
 - [x] **Firestore 동기화 (v0.7, 완료·다기기 검증)** — 로그인 사용자의 메뉴 설정(폴더/메뉴)을 `users/{uid}.folders`에 저장/복원. 로그인 시 클라우드 우선 로드, 변경 시 디바운스 저장. `js/modules/cloud.js`. 보안 규칙은 본인만 read/write.
-- [x] **GitHub Pages 배포 (v0.8, 완료)** — 저장소 `design-purim/toksum`(Public), main 브랜치 root 서빙, 라이브 https://design-purim.github.io/toksum/ (HTTP 200 확인). `gh` CLI는 `~/.local/bin/gh`(바이너리, 시스템 무변경). 갱신은 `git push`면 자동 재빌드. ⚠️ 로그인용 Firebase 승인 도메인 추가는 §8 참고.
+- [x] **GitHub Pages 배포 (v0.8, 완료)** — 저장소 `design-purim/toksum`(Public), main 브랜치 root 서빙, 라이브 https://design-purim.github.io/toksum/ (HTTP 200 확인). `gh` CLI는 `~/.local/bin/gh`(바이너리, 시스템 무변경). 갱신은 `git push`면 자동 재빌드. 배포 사이트 로그인 정상(Firebase 승인 도메인 추가 완료).
 - [x] **로고/브랜드 마크 (v0.9, 완료)** — "T·" 심볼 + 헤더 락업 + 파비콘. 스펙 DESIGN.md §5.
 - [x] **견적 목록 개편 + 폴더 기본 접힘 (v0.10, 완료·검증)** — 폴더 `collapsed` 기본값(시트 토글), 같은 메뉴 개수 합치기 + `− n +` 스테퍼(단가×개수), 체크박스 제거(합계·복사 전체), 리스트 hairline 한 줄 행. 8777에서 눈으로 검증. 상세·뒤집힌 결정은 §10.
+- [x] **무료 메뉴 (v0.11, 완료·검증)** — 메뉴 설정 시트 "무료" 토글 → `price:0`. `price===0`은 어디서나 "무료" 표시(`format.js formatWonOrFree`), 합계는 "0원" 유지(`formatWon`). 8777에서 검증(포맷 함수 + 렌더).
 
 **클릭 액션(main.js `onClick`) 현황:** 전부 연결됨 — `open-menu, toggle-folder, add-menu, add-direct, half, discount, copy, remove-item, qty-inc, qty-dec, undo, clear, open-account`(계정 바텀시트). (redo는 v0.4에서 제거, 체크박스 `toggle-item`은 v0.10에서 제거)
 
@@ -149,7 +150,7 @@ docs/                 # SPEC/UI/TODO(초안) + DESIGN.md + HANDOFF.md(이 문서
   - **레퍼런스는 토스 하나**(§10). 절제·미니멀 — 장식/여러 색 지양, **그린 악센트 하나**. "덜어내는" 쪽 먼저.
   - **큰 변경 전엔 `cp css/style.css css/style.css.bak`로 백업**(git 아님) — 사용자가 자주 롤백함. 매 변경 후 8777에서 눈으로 확인(스크린샷). (JS 큰 변경 시 `.bak`도 활용 — 이번 세션에 state/main/auth 백업한 전례.)
   - **깊이감을 카드/회색 캔버스로 풀지 말 것**(§10, 이미 2번 거부됨).
-- ⚠️ **배포 후 미완 1건 — Firebase 승인 도메인**: 배포 도메인 `design-purim.github.io`를 **Firebase 콘솔(`toksum-107fe`) → Authentication → Settings → 승인된 도메인**에 추가해야 배포 사이트에서 Google 로그인 동작(기본은 localhost만). config의 `authDomain`(`toksum-107fe.firebaseapp.com`)은 그대로 OK. 콘솔 링크: https://console.firebase.google.com/project/toksum-107fe/authentication/settings — 사용자가 진행. (미확인 시 다음 세션에서 로그인 테스트로 확인.)
+- ✅ **Firebase 승인 도메인 추가 완료** — 배포 도메인 `design-purim.github.io`를 Firebase 콘솔 승인된 도메인에 추가, **배포 사이트 Google 로그인 정상 동작 확인**(사용자 완료). 더 이상 미결 배포 이슈 없음.
 - **다음 할 일 (사용자가 명시한 순서 — 이제 다듬기 단계)**:
   1. ✅ **로고/브랜드 마크 (v0.9, 완료)** — "T·" 심볼(잉크 T + 초록 탭닷) 확정, 헤더 락업·파비콘·앱아이콘 에셋까지. **확정 스펙·좌표·락업 원리는 DESIGN.md §5**. 임시 미리보기(`_logo_preview.html`)는 8777에서 반복 확인 후 삭제함(로고 다듬을 땐 같은 방식으로 임시 파일 만들어 확인). ⚠️ iOS `apple-touch-icon`·PWA maskable은 **PNG 필요**(지금 SVG만) → PWA 단계에서 생성.
   2. **디자인 다듬기** — 밋밋함(리듬·타이포 방향으로만), 설치형 PWA 셸(manifest/아이콘/세이프에어리어, 미적용 — 로고 PNG도 여기서), 퍼센트 선택 바텀시트(할인 %, overlay.js 재사용, 미구현), 방금 붙은 것들 톤 조정. ⚠️ 사용자가 "디자인이 뭔가 아쉽다"던 지점 새 눈으로 재점검. **"톡! 터치 느낌"은 로고가 아니라 모션(스플래시/버튼 리플)으로** 살리기로 결정됨(리플을 정적 로고에 넣으면 지저분).
@@ -184,6 +185,7 @@ docs/                 # SPEC/UI/TODO(초안) + DESIGN.md + HANDOFF.md(이 문서
 - **같은 메뉴 = 개수 합치기 + 개수 조절** (v0.10) — 같은 메뉴칩 재탭 시 새 줄 대신 개수 +1(`menuId` 기준). item `amount`는 **단가**, `qty`가 개수, 줄 금액=단가×개수. 스테퍼 최소 1(삭제는 X). 직접입력/50%/할인은 합치지 않음(각각 별도 줄).
 - **폴더 "기본 열림/접힘" = 저장되는 기본값** (v0.10) — 폴더에 `collapsed` 필드(폴더 시트 토글). ~~접힘은 UI 전용·비저장(v0.3)~~ → **기본값은 저장**, 메인의 캐럿 토글은 런타임 임시(새로고침 시 기본값 복귀). 폴더 캐럿(⌃/⌄) 제거 금지 원칙은 그대로.
 - **견적 목록 행 = hairline 한 줄** (v0.10) — 회색 채움 제거, 행 사이 hairline. `이름 · [− n +] · 금액 · X` 한 줄. 금액 `min-width:84px`로 금액·스테퍼 열 정렬. (§ "카드/회색 캔버스" 항목의 v0.10 예외 참고)
+- **가격 0 = "무료"** (v0.11, Option A) — 별도 플래그 없이 `price===0`을 무료로 간주. 메뉴 설정 "무료" 토글은 가격을 0으로 두는 단축. 표시는 `format.js`: 항목 단위(메뉴칩·견적 줄·복사·설정 행)는 `formatWonOrFree`(0→"무료"), **합계는 `formatWon`(0→"0원")** — 빈 목록/0 합계가 "무료"로 보이면 안 되므로. 할인(음수)은 그대로 금액.
 - **금액 인풋 = 콤마 자동 + 앞 0 제거**, `type=text inputmode=numeric` (v0.5). number로 되돌리지 말 것(콤마·커서제어 불가).
 - **50%/할인 = 입력액 기준 원탭** (v0.5) — 50%=입력액×0.5, 할인=입력액을 −로. 퍼센트 선택 바텀시트는 보류(원하면 나중에).
 - **저장 = 메뉴 설정(폴더/메뉴)만** (v0.5) — 견적 목록(items)은 저장 안 함(사용자 확정). LocalStorage 로컬 한정. 나중에 items 저장을 추가하려면 사용자 확인 후.

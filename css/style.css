@@ -288,6 +288,13 @@ input {
   box-shadow: inset 0 0 0 1.5px var(--primary);
 }
 
+/* 비활성 금액칸 — '무료' 토글 켜졌을 때 흐리게 + placeholder를 '무료'로 */
+.field:disabled {
+  color: var(--gray-400);
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 .action-row {
   display: flex;
   gap: 8px;

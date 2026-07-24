@@ -4,6 +4,7 @@
 
 import { state, grandTotal, canUndo } from "./state.js";
 import { icon } from "./icons.js";
+import { formatWonOrFree } from "./format.js";
 
 const won = (n) => `${Number(n).toLocaleString("ko-KR")}원`;
 
@@ -149,7 +150,7 @@ function renderFolders(container) {
               (menu) => `
             <button class="menu-btn" data-action="add-menu" data-menu-id="${menu.id}">
               <span class="menu-btn-name">${escapeHtml(menu.name)}</span>
-              <span class="menu-btn-price">${won(menu.price)}</span>
+              <span class="menu-btn-price">${formatWonOrFree(menu.price)}</span>
             </button>`
             )
             .join("")}
@@ -180,7 +181,7 @@ function renderList(container) {
           <span class="qty-num">${qty}</span>
           <button class="qty-btn" data-action="qty-inc" aria-label="개수 늘리기">${icon("plus", { size: 14 })}</button>
         </div>
-        <span class="list-amount ${line < 0 ? "is-minus" : ""}">${won(line)}</span>
+        <span class="list-amount ${line < 0 ? "is-minus" : ""}">${formatWonOrFree(line)}</span>
         <button class="icon-btn list-remove" data-action="remove-item" aria-label="삭제">${icon("x", { size: 16 })}</button>
       </div>`;
     })

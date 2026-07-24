@@ -20,7 +20,7 @@ import {
 import { icon } from "../icons.js";
 import { openPage, closePage } from "./page.js";
 import { openOverlay, closeOverlay } from "./overlay.js";
-import { attachAmountFormatting, parseAmount, formatAmount } from "../format.js";
+import { attachAmountFormatting, parseAmount, formatAmount, formatWonOrFree } from "../format.js";
 import Sortable from "../vendor/sortable.esm.js";
 
 let container = null;
@@ -105,14 +105,14 @@ function renderMenu(folderId, menu) {
       <li class="settings-menu-item is-reorder" data-menu-id="${menu.id}">
         <button class="icon-btn drag-handle menu-drag" aria-label="메뉴 순서 이동" tabindex="-1">${icon("grip", { size: 20 })}</button>
         <span class="settings-menu-name">${esc(menu.name)}</span>
-        <span class="settings-menu-price">${won(menu.price)}</span>
+        <span class="settings-menu-price">${formatWonOrFree(menu.price)}</span>
       </li>`;
   }
   return `
     <li class="settings-menu-item" data-menu-id="${menu.id}">
       <button class="menu-row" data-act="edit-menu-sheet" data-folder-id="${folderId}" data-menu-id="${menu.id}">
         <span class="settings-menu-name">${esc(menu.name)}</span>
-        <span class="settings-menu-price">${won(menu.price)}</span>
+        <span class="settings-menu-price">${formatWonOrFree(menu.price)}</span>
         ${icon("chevron-right", { size: 18, cls: "menu-row-chevron" })}
       </button>
     </li>`;
@@ -159,6 +159,7 @@ function openMenuSheet(folderId, menuId) {
   if (!folder) return;
   const menu = menuId ? folder.menus.find((m) => m.id === menuId) : null;
   const isEdit = !!menu;
+  const isFree = isEdit && menu.price === 0; // 가격 0 = 무료(Option A)
 
   const sheet = document.createElement("div");
   sheet.className = "sheet";
@@ -172,17 +173,38 @@ function openMenuSheet(folderId, menuId) {
       </label>
       <label class="sheet-field">
         <span class="sheet-label">금액</span>
-        <input class="field" name="price" type="text" inputmode="numeric" pattern="[0-9,]*" placeholder="0" autocomplete="off" value="${isEdit ? formatAmount(menu.price) : ""}" />
+        <input class="field" name="price" type="text" inputmode="numeric" pattern="[0-9,]*" placeholder="${isFree ? "무료" : "0"}" autocomplete="off" value="${isEdit ? formatAmount(menu.price) : ""}" ${isFree ? "disabled" : ""} />
+      </label>
+      <label class="switch-row">
+        <span class="switch-text">
+          <span class="switch-title">무료</span>
+          <span class="switch-sub">금액을 0원으로 두고 "무료"로 표시해요</span>
+        </span>
+        <span class="switch">
+          <input type="checkbox" name="free" ${isFree ? "checked" : ""} />
+          <span class="switch-track" aria-hidden="true"></span>
+        </span>
       </label>
       <button class="btn btn-primary btn-lg" type="submit">저장</button>
       ${isEdit ? `<button class="btn-text-danger" type="button" data-act="delete">${icon("trash", { size: 18 })}<span>메뉴 삭제</span></button>` : ""}
     </form>
   `;
 
+  const priceInput = sheet.querySelector('[name="price"]');
+  const freeInput = sheet.querySelector('[name="free"]');
+  // 무료 토글: 켜면 금액칸 비활성(0원 취급), 끄면 다시 입력 가능
+  freeInput.addEventListener("change", () => {
+    priceInput.disabled = freeInput.checked;
+    priceInput.placeholder = freeInput.checked ? "무료" : "0";
+    if (freeInput.checked) priceInput.value = "";
+    else priceInput.focus();
+  });
+
   sheet.addEventListener("submit", (e) => {
     e.preventDefault();
     const name = e.target.elements.name.value.trim();
-    const price = parseAmount(e.target.elements.price.value); // 표시용 콤마 제거 후 숫자
+    const free = e.target.elements.free.checked;
+    const price = free ? 0 : parseAmount(e.target.elements.price.value); // 무료면 0, 아니면 콤마 제거 후 숫자
     if (!name) {
       e.target.elements.name.focus();
       return;
@@ -202,7 +224,7 @@ function openMenuSheet(folderId, menuId) {
   });
 
   openOverlay(sheet);
-  attachAmountFormatting(sheet.querySelector('[name="price"]')); // 금액 실시간 콤마+앞0제거
+  attachAmountFormatting(priceInput); // 금액 실시간 콤마+앞0제거
   focusSheet(sheet);
 }
 

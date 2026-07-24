@@ -19,7 +19,7 @@ import { openMenuSettings } from "./modules/menuSettings.js";
 import { showToast } from "./modules/toast.js";
 import { initAuth, openAccountSheet } from "./modules/auth.js";
 import { saveUserFolders } from "./modules/cloud.js";
-import { attachAmountFormatting, parseAmount } from "./format.js";
+import { attachAmountFormatting, parseAmount, formatWonOrFree } from "./format.js";
 
 const wonFmt = (n) => `${Number(n).toLocaleString("ko-KR")}원`;
 
@@ -188,7 +188,7 @@ async function handleCopy() {
   const lines = state.items.map((it) => {
     const qty = it.qty || 1;
     const label = qty > 1 ? `${it.name} ×${qty}` : it.name;
-    return `${label}  ${wonFmt(it.amount * qty)}`;
+    return `${label}  ${formatWonOrFree(it.amount * qty)}`;
   });
   const text = `${lines.join("\n")}\n\n합계  ${wonFmt(grandTotal())}`;
 
