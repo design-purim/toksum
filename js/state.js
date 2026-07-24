@@ -221,6 +221,17 @@ export function changeItemQty(itemId, delta) {
   notify();
 }
 
+// 항목 개수 직접 지정(입력칸). 정수·최소 1로 정규화(빈값/0/음수/소수는 1로).
+export function setItemQty(itemId, qty) {
+  const item = state.items.find((it) => it.id === itemId);
+  if (!item) return;
+  const next = Math.max(1, Math.floor(Number(qty) || 1));
+  if (next === item.qty) return;
+  snapshot();
+  item.qty = next;
+  notify();
+}
+
 // 항목 삭제
 export function removeItem(itemId) {
   const idx = state.items.findIndex((it) => it.id === itemId);

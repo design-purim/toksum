@@ -9,6 +9,7 @@ import {
   addMenuItem,
   removeItem,
   changeItemQty,
+  setItemQty,
   clearItems,
   undo,
   grandTotal,
@@ -42,6 +43,21 @@ function init() {
 
   // 클릭 이벤트를 한곳에서 위임 처리
   root.addEventListener("click", onClick);
+
+  // 개수 직접 입력: 입력칸에서 포커스가 빠질 때(change) 개수 반영. 최소 1로 정규화.
+  root.addEventListener("change", (e) => {
+    const input = e.target.closest('[data-action="qty-input"]');
+    if (!input) return;
+    const id = e.target.closest(".list-item")?.dataset.itemId;
+    if (id) setItemQty(id, input.value);
+  });
+  // 개수 입력칸에서 Enter → 커밋(블러)
+  root.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && e.target.closest('[data-action="qty-input"]')) {
+      e.preventDefault();
+      e.target.blur();
+    }
+  });
 
   // 헤더: 스크롤 시에만 하단 hairline 표시 (토스·iOS 패턴)
   const header = root.querySelector(".app-header");

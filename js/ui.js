@@ -176,12 +176,12 @@ function renderList(container) {
           <span class="list-name">${escapeHtml(item.name)}</span>
           ${item.memo ? `<span class="list-memo">${escapeHtml(item.memo)}</span>` : ""}
         </div>
+        <span class="list-amount ${line < 0 ? "is-minus" : ""}">${formatWonOrFree(line)}</span>
         <div class="qty-stepper">
           <button class="qty-btn" data-action="qty-dec" aria-label="개수 줄이기" ${qty <= 1 ? "disabled" : ""}>${icon("minus", { size: 14 })}</button>
-          <span class="qty-num">${qty}</span>
+          <input class="qty-num" data-action="qty-input" type="text" inputmode="numeric" pattern="[0-9]*" value="${qty}" aria-label="개수 직접 입력" />
           <button class="qty-btn" data-action="qty-inc" aria-label="개수 늘리기">${icon("plus", { size: 14 })}</button>
         </div>
-        <span class="list-amount ${line < 0 ? "is-minus" : ""}">${formatWonOrFree(line)}</span>
         <button class="icon-btn list-remove" data-action="remove-item" aria-label="삭제">${icon("x", { size: 16 })}</button>
       </div>`;
     })

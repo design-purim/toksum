@@ -580,6 +580,7 @@ input {
   height: 26px;
   font-size: 14px;
   color: var(--gray-400);
+  margin-left: 4px; /* 스테퍼 +와 삭제 사이 간격(오탭 방지) */
 }
 
 /* 개수 조절 스테퍼 — 흰 pill + 얇은 테두리로 hairline 행 위에서 또렷 */
@@ -613,13 +614,30 @@ input {
   pointer-events: none;
 }
 
+/* 개수 = 직접 입력칸(스테퍼 가운데). 기본 input 꾸밈 제거 */
 .qty-num {
-  min-width: 22px;
+  width: 34px;
+  border: none;
+  background: transparent;
+  padding: 0;
   text-align: center;
   font-size: 14px;
   font-weight: 700;
   color: var(--gray-900);
   font-variant-numeric: tabular-nums;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.qty-num:focus {
+  outline: none;
+  color: var(--primary);
+}
+
+.qty-num::-webkit-outer-spin-button,
+.qty-num::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 /* ===== Toast ===== */
