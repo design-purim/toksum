@@ -5,7 +5,8 @@
 
 - **개수 직접 입력** — 스테퍼 가운데 숫자를 `<span>`→`<input>`(inputmode=numeric)로. 탭해서 원하는 개수 타이핑(예: 25). `−/+` 버튼 병행. `state.js setItemQty()`(정수·최소 1로 정규화 — 빈값/0/음수/소수는 1). `main.js`: 입력칸 `change`로 반영(타이핑 중엔 재렌더 안 함, 블러/Enter에 커밋), Enter→blur.
 - **행 배치 스왑** — `이름·[스테퍼]·금액·X` → **`이름 · 금액 · [스테퍼] · X`**. 금액이 이름 뒤 오른쪽 열로 와 스캔 자연스럽고(열 정렬 유지), 스테퍼·삭제가 오른쪽에 그룹. 스테퍼 `+`와 X 사이 간격(`.list-remove margin-left`)으로 오탭 방지.
-- **변경 파일**: `state.js`(setItemQty), `ui.js`(행 순서 스왑·개수 input), `main.js`(개수 입력 change/Enter), `style.css`(`.qty-num` input 스타일·`.list-remove` 간격).
+- **로딩 플레이스홀더 제거(같은 날 후속 fix)** — `index.html`의 `#app` 안에 남아있던 옛 세팅 문구("프로젝트 세팅 완료…")가 JS 마운트 직전 잠깐 노출되던 문제 → 빈 컨테이너로 교체.
+- **변경 파일**: `state.js`(setItemQty), `ui.js`(행 순서 스왑·개수 input), `main.js`(개수 입력 change/Enter), `style.css`(`.qty-num` input 스타일·`.list-remove` 간격), `index.html`(플레이스홀더 제거).
 
 ## v0.11 — 무료 메뉴 (2026-07-24)
 > 메뉴를 "무료"로 등록 → 금액이 0원인 곳은 어디서나 **"무료"** 로 표시.
