@@ -15,6 +15,7 @@ import {
   deleteMenu,
   reorderFolders,
   moveMenu,
+  setFolderCollapsed,
 } from "../state.js";
 import { icon } from "../icons.js";
 import { openPage, closePage } from "./page.js";
@@ -220,6 +221,16 @@ function openFolderSheet(folderId) {
         <span class="sheet-label">이름</span>
         <input class="field" name="name" placeholder="폴더 이름" autocomplete="off" value="${esc(folder.name)}" />
       </label>
+      <label class="switch-row">
+        <span class="switch-text">
+          <span class="switch-title">기본으로 접어두기</span>
+          <span class="switch-sub">메인 화면에서 이 폴더를 접은 채로 시작해요</span>
+        </span>
+        <span class="switch">
+          <input type="checkbox" name="collapsed" ${folder.collapsed ? "checked" : ""} />
+          <span class="switch-track" aria-hidden="true"></span>
+        </span>
+      </label>
       <button class="btn btn-primary btn-lg" type="submit">저장</button>
       <button class="btn-text-danger" type="button" data-act="delete">${icon("trash", { size: 18 })}<span>폴더 삭제</span></button>
     </form>
@@ -228,6 +239,7 @@ function openFolderSheet(folderId) {
   sheet.addEventListener("submit", (e) => {
     e.preventDefault();
     renameFolder(folderId, e.target.elements.name.value);
+    setFolderCollapsed(folderId, e.target.elements.collapsed.checked);
     closeOverlay();
     render();
   });

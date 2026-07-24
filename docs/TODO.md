@@ -10,6 +10,7 @@
 - [x] Firestore (로그인 사용자 메뉴 설정 동기화 · v0.7, 다기기 검증됨)
 - [x] GitHub Pages 배포 (v0.8 · 라이브 https://design-purim.github.io/toksum/)
 - [x] 로고 / 브랜드 마크 ("T·" 심볼 + 헤더 락업 + 파비콘 · v0.9, 스펙 DESIGN.md §5)
+- [x] 견적 목록 개편 + 폴더 기본 접힘 (v0.10 · 개수 합치기/스테퍼, 체크박스 제거, hairline 리스트, 폴더 collapsed 토글)
 
 ## 남은 것 (다듬기 단계)
 

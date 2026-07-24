@@ -1,7 +1,7 @@
 # HANDOFF — 세션 인수인계 문서
 
 > 완전히 새 세션에서도 작업을 매끄럽게 이어갈 수 있도록 정리한 문서.
-> 최종 갱신: 2026-07-24 (**톡셈** — 범용 견적기, 정적 PWA) — **로고/브랜드 마크 확정**(v0.9): "T·" 심볼(잉크 T + 초록 탭닷) + 헤더 락업 + 파비콘(다크 사각). 타이틀 "톡톡 눌러 셈". 로고 스펙은 DESIGN.md §5. 그 전: v0.8 GitHub Pages 배포(라이브 https://design-purim.github.io/toksum/ · 저장소 `design-purim/toksum` Public), v0.7 Firestore 동기화, v0.6 톡셈 브랜딩+그린 테마+Firebase 로그인, v0.5 계산 로직·저장 (CHANGELOG 참고).
+> 최종 갱신: 2026-07-24 (**톡셈** — 범용 견적기, 정적 PWA) — **견적 목록 개편 + 폴더 기본 접힘**(v0.10): ①폴더 "기본 열림/접힘" 설정(폴더 시트 토글, `collapsed` 필드) ②같은 메뉴 다시 누르면 **개수 합치기** + 행마다 `− n +` 스테퍼(단가×개수) ③견적 목록 **체크박스 제거**(합계·복사는 항상 전체, 빼려면 X) ④리스트를 **hairline 한 줄 행**으로(회색 채움 제거). ⚠️ **§10의 결정 3건이 이번에 뒤집힘**(접힘 저장, 합계 전체, hairline) — §10 참고. 그 전: v0.9 로고/브랜드 마크("T·" 심볼, DESIGN.md §5), v0.8 GitHub Pages 배포(라이브 https://design-purim.github.io/toksum/ · 저장소 `design-purim/toksum` Public), v0.7 Firestore 동기화, v0.6 톡셈 브랜딩+그린 테마+Firebase 로그인, v0.5 계산 로직·저장 (CHANGELOG 참고).
 >
 > 📛 **앱 이름 = 톡셈** (영문 **Toksum** — Tok 톡톡 누르기 + sum 셈·합계). "톡톡 눌러 셈한다". ⚠️ **표지 전용이 아니라 업종 불문 "항목 눌러 빠르게 견적" 범용 툴**로 포지셔닝(사용자 확정). 기존 "표지 디자인 견적 계산기" 표현은 레거시.
 
@@ -71,7 +71,7 @@ docs/                 # SPEC/UI/TODO(초안) + DESIGN.md + HANDOFF.md(이 문서
 
 **데이터 흐름(단방향):** 사용자 입력 → 상태 액션(state.js, `notify()`) → 구독자(main.js가 `render()`) 자동 갱신. UI는 상태만 바꾸면 화면이 따라온다.
 
-**상태 모델:** `state = { folders:[{id,name,menus:[{id,name,price}]}], items:[{id,name,amount,memo,type,selected}], user }`. `items`는 견적 목록(계산 로직에서 채움).
+**상태 모델:** `state = { folders:[{id,name,collapsed,menus:[{id,name,price}]}], items:[{id,name,amount,qty,memo,type,menuId}], user }`. `items`는 견적 목록(계산 로직에서 채움). `amount`=단가, `qty`=개수, 줄 금액=단가×개수. `menuId`는 메뉴칩에서 온 항목만(같은 메뉴 개수 합치기 기준). `collapsed`=폴더 기본 접힘. (v0.10에서 `selected` 제거·`qty`/`menuId`/`collapsed` 추가)
 
 ## 4. 진행 상황 (TODO 대비)
 
@@ -83,8 +83,10 @@ docs/                 # SPEC/UI/TODO(초안) + DESIGN.md + HANDOFF.md(이 문서
 - [x] **Firebase 로그인 (v0.6, 완료)** — Google 로그인 실동작. 프로젝트 `toksum-107fe`. 헤더 👤 → 계정 바텀시트(로그인/로그아웃), 로그인 시 프로필 아바타.
 - [x] **Firestore 동기화 (v0.7, 완료·다기기 검증)** — 로그인 사용자의 메뉴 설정(폴더/메뉴)을 `users/{uid}.folders`에 저장/복원. 로그인 시 클라우드 우선 로드, 변경 시 디바운스 저장. `js/modules/cloud.js`. 보안 규칙은 본인만 read/write.
 - [x] **GitHub Pages 배포 (v0.8, 완료)** — 저장소 `design-purim/toksum`(Public), main 브랜치 root 서빙, 라이브 https://design-purim.github.io/toksum/ (HTTP 200 확인). `gh` CLI는 `~/.local/bin/gh`(바이너리, 시스템 무변경). 갱신은 `git push`면 자동 재빌드. ⚠️ 로그인용 Firebase 승인 도메인 추가는 §8 참고.
+- [x] **로고/브랜드 마크 (v0.9, 완료)** — "T·" 심볼 + 헤더 락업 + 파비콘. 스펙 DESIGN.md §5.
+- [x] **견적 목록 개편 + 폴더 기본 접힘 (v0.10, 완료·검증)** — 폴더 `collapsed` 기본값(시트 토글), 같은 메뉴 개수 합치기 + `− n +` 스테퍼(단가×개수), 체크박스 제거(합계·복사 전체), 리스트 hairline 한 줄 행. 8777에서 눈으로 검증. 상세·뒤집힌 결정은 §10.
 
-**클릭 액션(main.js `onClick`) 현황:** 전부 연결됨 — `open-menu, toggle-folder, add-menu, add-direct, half, discount, copy, remove-item, undo, clear, open-account`(계정 바텀시트) + 체크박스 `toggle-item`(별도 `change` 리스너). (redo는 v0.4에서 제거)
+**클릭 액션(main.js `onClick`) 현황:** 전부 연결됨 — `open-menu, toggle-folder, add-menu, add-direct, half, discount, copy, remove-item, qty-inc, qty-dec, undo, clear, open-account`(계정 바텀시트). (redo는 v0.4에서 제거, 체크박스 `toggle-item`은 v0.10에서 제거)
 
 ## 5. 핵심 결정 & 문서(초안)와 달라진 점
 
@@ -172,12 +174,16 @@ docs/                 # SPEC/UI/TODO(초안) + DESIGN.md + HANDOFF.md(이 문서
 - **채운 색은 primary(그린) 하나만** — 화면당 강조 1개. 보조 액션(50%/할인)은 회색 tonal + 컬러 텍스트. 할인 빨강은 채움 아님, 텍스트 악센트로만. (v0.3, 색 v0.6)
 - **컨트롤 라운드 = 12px 통일** — 인풋·버튼·칩 모두 `--radius-sm(12px)`. 콘텐츠 카드/목록 행만 16px. pill(999)로 되돌리지 말 것. (v0.3)
 - **깊이감은 "카드/회색 캔버스"로 풀지 말 것** (v0.4) — 밋밋함 해소하려 ①회색 캔버스+흰 카드, ②흰 요소 부유 둘 다 시도했으나 "답답/아님"으로 거부됨. **흰 캔버스 + 요소 gray-100** 유지. 밋밋함은 리듬·타이포·앱패턴으로 접근.
+  - ⚠️ **(v0.10 예외) 견적 목록은 hairline 행으로 전환** — 사용자 지시로 리스트만 gray-100 채움 제거 → 행 사이 hairline 구분선(`--border`) + 한 줄 컴팩트. 이 원칙(요소 gray-100)은 **메뉴칩·입력칸 등 나머지엔 여전히 유효**, 견적 목록 행만 예외.
 - **빈 상태(노데이터)는 숨김** (v0.4) — 사용자가 없는 편이 낫다고 판단. 다시 넣자 제안 금지(`ui.js` renderList에 복원 주석만).
 - **하단바 = 합계(정보) + 복사(파란 CTA, 액션 히어로) + 실행취소·비우기(회색 유틸)** (v0.4). redo 없음. 복사가 이 앱의 최종 목적이라 하단 단일 CTA.
 - **앱 느낌 방향은 ②UI 패턴** (v0.4) — iOS 라지 타이틀 + 반투명 블러 바 채택. ①설치형 PWA 셸(manifest/아이콘/세이프에어리어)은 **아직 미적용**, 다음 후보.
 - **여백 리듬 = 28 > 22 > 12 > 8** (그룹 사이 > 그룹 안) (v0.4). 폴더는 접힘 시 10으로 촘촘하게(v0.5).
 - **폴더 캐럿(⌃/⌄) 제거 금지** (v0.5) — 폴더를 "접을 수 있다"고 인식하는 유일한 신호. 오른쪽 화살표가 번잡하면 "관리" 쪽(→톱니 아이콘)만 손댈 것. 캐럿은 유지.
-- **합계 = 체크된 항목만(`selectedTotal`)** (v0.5) — 전체합(`grandTotal`) 아님. 항목 체크박스가 합계 포함 여부를 정함.
+- ~~**합계 = 체크된 항목만(`selectedTotal`)** (v0.5)~~ → **(v0.10 뒤집힘) 합계·복사 = 목록 전체(`grandTotal`)**. 체크박스 제거("안 넣을 거면 그냥 삭제", 사용자 확정). 빼려면 항목 X 삭제(↶ 복구). `selected`/`toggleItem`/`selectedTotal` 코드에서 제거됨.
+- **같은 메뉴 = 개수 합치기 + 개수 조절** (v0.10) — 같은 메뉴칩 재탭 시 새 줄 대신 개수 +1(`menuId` 기준). item `amount`는 **단가**, `qty`가 개수, 줄 금액=단가×개수. 스테퍼 최소 1(삭제는 X). 직접입력/50%/할인은 합치지 않음(각각 별도 줄).
+- **폴더 "기본 열림/접힘" = 저장되는 기본값** (v0.10) — 폴더에 `collapsed` 필드(폴더 시트 토글). ~~접힘은 UI 전용·비저장(v0.3)~~ → **기본값은 저장**, 메인의 캐럿 토글은 런타임 임시(새로고침 시 기본값 복귀). 폴더 캐럿(⌃/⌄) 제거 금지 원칙은 그대로.
+- **견적 목록 행 = hairline 한 줄** (v0.10) — 회색 채움 제거, 행 사이 hairline. `이름 · [− n +] · 금액 · X` 한 줄. 금액 `min-width:84px`로 금액·스테퍼 열 정렬. (§ "카드/회색 캔버스" 항목의 v0.10 예외 참고)
 - **금액 인풋 = 콤마 자동 + 앞 0 제거**, `type=text inputmode=numeric` (v0.5). number로 되돌리지 말 것(콤마·커서제어 불가).
 - **50%/할인 = 입력액 기준 원탭** (v0.5) — 50%=입력액×0.5, 할인=입력액을 −로. 퍼센트 선택 바텀시트는 보류(원하면 나중에).
 - **저장 = 메뉴 설정(폴더/메뉴)만** (v0.5) — 견적 목록(items)은 저장 안 함(사용자 확정). LocalStorage 로컬 한정. 나중에 items 저장을 추가하려면 사용자 확인 후.

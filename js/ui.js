@@ -2,7 +2,7 @@
 // state를 받아 화면을 그립니다. 이 단계에서는 레이아웃/구조를 완성하고,
 // 실제 동작(추가·계산·실행취소 등)은 이후 단계에서 이벤트 핸들러로 연결합니다.
 
-import { state, selectedTotal, canUndo } from "./state.js";
+import { state, grandTotal, canUndo } from "./state.js";
 import { icon } from "./icons.js";
 
 const won = (n) => `${Number(n).toLocaleString("ko-KR")}원`;
@@ -11,8 +11,25 @@ const won = (n) => `${Number(n).toLocaleString("ko-KR")}원`;
 const brandSymbol = `<svg class="logo-sym" viewBox="20 22 60 64" aria-hidden="true"><rect class="ink" x="24" y="25" width="52" height="13" rx="6.5"/><rect class="ink" x="43.5" y="25" width="13" height="36" rx="6.5"/><circle class="dot" cx="50" cy="76" r="7.5"/></svg>`;
 const brandLockup = `<span class="brand">${brandSymbol}<span class="brand-text">톡셈</span></span>`;
 
-// 폴더 접힘 상태 (UI 전용 — 데이터 모델/저장에는 넣지 않음)
+// 폴더 접힘 상태 (런타임 UI 상태 — 새로고침하면 각 폴더의 "기본값"에서 다시 시작)
 const collapsedFolders = new Set();
+// 각 폴더에 마지막으로 반영한 기본값(folder.collapsed). 기본값이 바뀌면 다시 반영한다.
+const appliedDefault = new Map();
+
+// 폴더별 "기본 접힘" 설정을 런타임 상태에 반영.
+//  - 처음 보는 폴더(새로고침·신규·클라우드 로드): 기본값대로 시작
+//  - 기본값이 설정에서 바뀌면: 그 폴더만 새 기본값으로 재적용
+//  - 사용자가 메인에서 접었다 편 것(런타임 토글)은 기본값이 그대로면 유지
+function syncCollapseDefaults() {
+  for (const folder of state.folders) {
+    const def = !!folder.collapsed;
+    if (appliedDefault.get(folder.id) !== def) {
+      appliedDefault.set(folder.id, def);
+      if (def) collapsedFolders.add(folder.id);
+      else collapsedFolders.delete(folder.id);
+    }
+  }
+}
 
 export function toggleFolder(id) {
   if (collapsedFolders.has(id)) collapsedFolders.delete(id);
@@ -105,6 +122,7 @@ function renderFooterActions(root) {
 }
 
 function renderFolders(container) {
+  syncCollapseDefaults(); // 폴더별 "기본 접힘" 설정을 런타임 상태에 반영
   // 빈 메뉴(신규 사용자) — 다음 행동(관리에서 추가) 유도
   if (state.folders.length === 0) {
     container.innerHTML = `
@@ -148,27 +166,30 @@ function renderList(container) {
     return;
   }
   container.innerHTML = state.items
-    .map(
-      (item) => `
-      <div class="list-item ${item.selected ? "is-selected" : ""}" data-item-id="${item.id}">
-        <label class="list-check">
-          <input type="checkbox" data-action="toggle-item" ${item.selected ? "checked" : ""} />
-          <span class="checkbox" aria-hidden="true">${icon("check", { size: 15 })}</span>
-        </label>
+    .map((item) => {
+      const qty = item.qty || 1;
+      const line = item.amount * qty; // 줄 금액 = 단가 × 개수
+      return `
+      <div class="list-item" data-item-id="${item.id}">
         <div class="list-body">
           <span class="list-name">${escapeHtml(item.name)}</span>
           ${item.memo ? `<span class="list-memo">${escapeHtml(item.memo)}</span>` : ""}
         </div>
-        <span class="list-amount ${item.amount < 0 ? "is-minus" : ""}">${won(item.amount)}</span>
+        <div class="qty-stepper">
+          <button class="qty-btn" data-action="qty-dec" aria-label="개수 줄이기" ${qty <= 1 ? "disabled" : ""}>${icon("minus", { size: 14 })}</button>
+          <span class="qty-num">${qty}</span>
+          <button class="qty-btn" data-action="qty-inc" aria-label="개수 늘리기">${icon("plus", { size: 14 })}</button>
+        </div>
+        <span class="list-amount ${line < 0 ? "is-minus" : ""}">${won(line)}</span>
         <button class="icon-btn list-remove" data-action="remove-item" aria-label="삭제">${icon("x", { size: 16 })}</button>
-      </div>`
-    )
+      </div>`;
+    })
     .join("");
 }
 
 function renderTotal(el) {
-  // 합계 = 체크된 항목만(selectedTotal). 체크 해제하면 합계에서 빠집니다.
-  el.textContent = won(selectedTotal());
+  // 합계 = 목록의 모든 항목(단가 × 개수). 빼려면 항목을 삭제(X).
+  el.textContent = won(grandTotal());
 }
 
 function escapeHtml(str) {

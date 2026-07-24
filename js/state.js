@@ -77,7 +77,16 @@ export function replaceFolders(folders) {
 
 // ===== 폴더 액션 =====
 export function addFolder(name) {
-  state.folders.push({ id: uid("folder"), name: (name || "").trim() || "새 폴더", menus: [] });
+  // collapsed: 메인 화면에서 이 폴더를 접은 채로 시작할지(기본 열림 = false)
+  state.folders.push({ id: uid("folder"), name: (name || "").trim() || "새 폴더", menus: [], collapsed: false });
+  notify();
+}
+
+// 폴더의 "기본 접힘" 설정 변경 (메뉴 설정에서 토글). 메인 화면 시작 상태를 정함.
+export function setFolderCollapsed(folderId, collapsed) {
+  const folder = state.folders.find((f) => f.id === folderId);
+  if (!folder) return;
+  folder.collapsed = !!collapsed;
   notify();
 }
 
@@ -162,41 +171,53 @@ export function canUndo() {
   return history.length > 0;
 }
 
-// 마지막 변경을 되돌립니다(추가/체크/삭제/비우기 공통).
+// 마지막 변경을 되돌립니다(추가/개수/삭제/비우기 공통).
 export function undo() {
   if (history.length === 0) return;
   state.items = JSON.parse(history.pop());
   notify();
 }
 
-// 항목 하나를 목록에 추가합니다. 기본으로 '선택(체크)' 상태 → 바로 합계에 반영됩니다.
-export function addItem({ name, amount, memo = "", type = "menu" }) {
+// 항목 하나를 목록에 추가합니다. 목록에 있는 항목은 모두 합계·복사에 포함됩니다.
+// amount는 "단가", qty는 "개수" → 줄 금액 = amount × qty.
+export function addItem({ name, amount, memo = "", type = "menu", menuId = null }) {
   snapshot();
   state.items.push({
     id: uid("item"),
     name: (name || "").trim() || "항목",
     amount: Number(amount) || 0,
+    qty: 1,
     memo: (memo || "").trim(),
     type,
-    selected: true,
+    menuId, // 메뉴칩에서 온 항목만 값이 있음(같은 메뉴 재추가 시 개수 합치기 기준)
   });
   notify();
 }
 
-// 메뉴 버튼(칩) 클릭 → 해당 메뉴를 이름/금액 그대로 목록에 추가
+// 메뉴 버튼(칩) 클릭 → 목록에 추가. 이미 같은 메뉴가 있으면 새 줄 대신 개수 +1.
 export function addMenuItem(menuId) {
   for (const folder of state.folders) {
     const menu = folder.menus.find((m) => m.id === menuId);
-    if (menu) return addItem({ name: menu.name, amount: menu.price, type: "menu" });
+    if (!menu) continue;
+    const existing = state.items.find((it) => it.menuId === menuId);
+    if (existing) {
+      snapshot();
+      existing.qty += 1;
+      notify();
+      return;
+    }
+    return addItem({ name: menu.name, amount: menu.price, type: "menu", menuId });
   }
 }
 
-// 항목 체크(선택) 토글 → 합계(selectedTotal)에 포함 여부가 바뀝니다.
-export function toggleItem(itemId) {
+// 항목 개수 조절 (+1 / −1). 최소 1까지만(0 이하로는 안 내려감 — 삭제는 X 버튼).
+export function changeItemQty(itemId, delta) {
   const item = state.items.find((it) => it.id === itemId);
   if (!item) return;
+  const next = Math.max(1, (item.qty || 1) + delta);
+  if (next === item.qty) return;
   snapshot();
-  item.selected = !item.selected;
+  item.qty = next;
   notify();
 }
 
@@ -218,12 +239,7 @@ export function clearItems() {
 }
 
 // ===== 파생 계산 =====
-export function selectedTotal() {
-  return state.items
-    .filter((it) => it.selected)
-    .reduce((sum, it) => sum + it.amount, 0);
-}
-
+// 합계 = 목록의 모든 항목(단가 × 개수). 체크 개념 없음(있으면 다 포함).
 export function grandTotal() {
-  return state.items.reduce((sum, it) => sum + it.amount, 0);
+  return state.items.reduce((sum, it) => sum + it.amount * (it.qty || 1), 0);
 }

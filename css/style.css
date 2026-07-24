@@ -489,7 +489,6 @@ input {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8px;
 }
 
 /* 빈 상태 — 남은 영역 중앙에 아이콘 + 다음 행동 유도(토스·iOS 패턴) */
@@ -519,72 +518,18 @@ input {
   color: var(--gray-400);
 }
 
+/* 한 줄 컴팩트 행 — 채움 없이 hairline 구분선으로 분리(토스 리스트) */
 .list-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 16px;
+  padding: 13px 2px;
   border: none;
-  border-radius: var(--radius);
-  background: var(--gray-100);
-  transition: background 0.15s;
+  border-bottom: 1px solid var(--border);
 }
 
-.list-item.is-selected {
-  background: var(--primary-weak);
-}
-
-/* 커스텀 체크박스 — 네이티브 input은 겹쳐 숨기고(포커스·접근성 유지) span으로 그림 */
-.list-check {
-  position: relative;
-  display: inline-flex;
-  flex: none;
-  cursor: pointer;
-}
-
-.list-check input {
-  position: absolute;
-  inset: 0;
-  margin: 0;
-  opacity: 0;
-  cursor: pointer;
-}
-
-.list-check .checkbox {
-  width: 22px;
-  height: 22px;
-  border-radius: 7px;
-  border: 2px solid var(--gray-300);
-  background: var(--surface);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  transition: background 0.15s, border-color 0.15s, transform 0.1s ease;
-}
-
-.list-check .checkbox .icon {
-  opacity: 0;
-  transform: scale(0.6);
-  transition: opacity 0.12s ease, transform 0.12s ease;
-}
-
-.list-check input:checked + .checkbox {
-  background: var(--primary);
-  border-color: var(--primary);
-}
-
-.list-check input:checked + .checkbox .icon {
-  opacity: 1;
-  transform: scale(1);
-}
-
-.list-check input:active + .checkbox {
-  transform: scale(0.9);
-}
-
-.list-check input:focus-visible + .checkbox {
-  box-shadow: 0 0 0 3px var(--primary-weak);
+.list-item:last-child {
+  border-bottom: none;
 }
 
 .list-body {
@@ -592,6 +537,7 @@ input {
   min-width: 0;
   display: flex;
   flex-direction: column;
+  gap: 2px;
 }
 
 .list-name {
@@ -613,6 +559,9 @@ input {
   font-weight: 700;
   color: var(--gray-900);
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  min-width: 84px; /* 금액을 고정 열로 → 행마다 금액·스테퍼가 세로로 정렬 */
 }
 
 .list-amount.is-minus {
@@ -620,10 +569,50 @@ input {
 }
 
 .list-remove {
-  min-width: 32px;
-  height: 32px;
+  min-width: 26px;
+  height: 26px;
   font-size: 14px;
   color: var(--gray-400);
+}
+
+/* 개수 조절 스테퍼 — 흰 pill + 얇은 테두리로 hairline 행 위에서 또렷 */
+.qty-stepper {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+.qty-btn {
+  width: 30px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gray-700, #4e5968);
+  border-radius: 999px;
+  transition: color 0.12s ease, transform 0.08s ease;
+}
+
+.qty-btn:active {
+  color: var(--primary);
+  transform: scale(0.88);
+}
+
+.qty-btn:disabled {
+  color: var(--gray-300);
+  pointer-events: none;
+}
+
+.qty-num {
+  min-width: 22px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gray-900);
+  font-variant-numeric: tabular-nums;
 }
 
 /* ===== Toast ===== */
@@ -995,6 +984,81 @@ input {
 .sheet .field {
   flex: none;
   width: 100%;
+}
+
+/* 토글 스위치 행 (폴더 기본 접힘 등) */
+.switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 2px;
+  cursor: pointer;
+}
+
+.switch-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.switch-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--gray-900, #191f28);
+}
+
+.switch-sub {
+  font-size: 13px;
+  color: var(--gray-500, #8b95a1);
+  line-height: 1.35;
+}
+
+.switch {
+  position: relative;
+  flex: none;
+  width: 50px;
+  height: 30px;
+}
+
+.switch input {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  cursor: pointer;
+}
+
+.switch-track {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--gray-200);
+  transition: background 0.2s ease;
+}
+
+.switch-track::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease;
+}
+
+.switch input:checked + .switch-track {
+  background: var(--primary);
+}
+
+.switch input:checked + .switch-track::after {
+  transform: translateX(20px);
 }
 
 .btn-lg {

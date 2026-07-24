@@ -7,11 +7,11 @@ import {
   subscribe,
   addItem,
   addMenuItem,
-  toggleItem,
   removeItem,
+  changeItemQty,
   clearItems,
   undo,
-  selectedTotal,
+  grandTotal,
   saveFolders,
 } from "./state.js";
 import { mountApp, render, toggleFolder } from "./ui.js";
@@ -42,14 +42,6 @@ function init() {
 
   // 클릭 이벤트를 한곳에서 위임 처리
   root.addEventListener("click", onClick);
-
-  // 체크박스는 click 대신 change로 처리(라벨 클릭 이중발화 방지)
-  root.addEventListener("change", (e) => {
-    const cb = e.target.closest('[data-action="toggle-item"]');
-    if (!cb) return;
-    const id = e.target.closest(".list-item")?.dataset.itemId;
-    if (id) toggleItem(id);
-  });
 
   // 헤더: 스크롤 시에만 하단 hairline 표시 (토스·iOS 패턴)
   const header = root.querySelector(".app-header");
@@ -119,6 +111,16 @@ function onClick(e) {
       if (id) removeItem(id);
       break;
     }
+    case "qty-inc": {
+      const id = el.closest(".list-item")?.dataset.itemId;
+      if (id) changeItemQty(id, +1);
+      break;
+    }
+    case "qty-dec": {
+      const id = el.closest(".list-item")?.dataset.itemId;
+      if (id) changeItemQty(id, -1);
+      break;
+    }
     case "undo":
       // 마지막 변경 되돌리기
       undo();
@@ -179,13 +181,16 @@ function handleDiscount() {
   clearDirectInput(amountEl, memoEl);
 }
 
-// 복사 → 체크된 항목 + 합계를 텍스트로 만들어 클립보드에 복사
+// 복사 → 목록의 모든 항목 + 합계를 텍스트로 만들어 클립보드에 복사
 async function handleCopy() {
-  const selected = state.items.filter((it) => it.selected);
-  if (selected.length === 0) return void showToast("복사할 항목이 없어요");
+  if (state.items.length === 0) return void showToast("복사할 항목이 없어요");
 
-  const lines = selected.map((it) => `${it.name}  ${wonFmt(it.amount)}`);
-  const text = `${lines.join("\n")}\n\n합계  ${wonFmt(selectedTotal())}`;
+  const lines = state.items.map((it) => {
+    const qty = it.qty || 1;
+    const label = qty > 1 ? `${it.name} ×${qty}` : it.name;
+    return `${label}  ${wonFmt(it.amount * qty)}`;
+  });
+  const text = `${lines.join("\n")}\n\n합계  ${wonFmt(grandTotal())}`;
 
   try {
     await navigator.clipboard.writeText(text);
