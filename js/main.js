@@ -12,7 +12,7 @@ import {
   setItemQty,
   clearItems,
   undo,
-  grandTotal,
+  quoteTotal,
   saveFolders,
 } from "./state.js";
 import { mountApp, render, toggleFolder } from "./ui.js";
@@ -206,7 +206,7 @@ async function handleCopy() {
     const label = qty > 1 ? `${it.name} ×${qty}` : it.name;
     return `${label}  ${formatWonOrFree(it.amount * qty)}`;
   });
-  const text = `${lines.join("\n")}\n\n합계  ${wonFmt(grandTotal())}`;
+  const text = `${lines.join("\n")}\n\n합계  ${wonFmt(quoteTotal())}`;
 
   try {
     await navigator.clipboard.writeText(text);

@@ -273,7 +273,14 @@ export function clearItems() {
 }
 
 // ===== 파생 계산 =====
-// 합계 = 목록의 모든 항목(단가 × 개수). 체크 개념 없음(있으면 다 포함).
+// 합계(원값) = 목록의 모든 항목(단가 × 개수). 할인(음수) 때문에 0 미만도 나올 수 있음.
 export function grandTotal() {
   return state.items.reduce((sum, it) => sum + it.amount * (it.qty || 1), 0);
+}
+
+// 견적 합계(표시용) = 0 미만은 0으로 클램프.
+// 이건 단순 계산기가 아니라 "견적" — 할인이 물건값을 넘어도 청구액의 바닥은 0원.
+// (개별 할인 줄은 그대로 음수로 보이고, "합"만 0으로 막는다.)
+export function quoteTotal() {
+  return Math.max(0, grandTotal());
 }

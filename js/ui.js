@@ -2,7 +2,7 @@
 // state를 받아 화면을 그립니다. 이 단계에서는 레이아웃/구조를 완성하고,
 // 실제 동작(추가·계산·실행취소 등)은 이후 단계에서 이벤트 핸들러로 연결합니다.
 
-import { state, grandTotal, canUndo, favMenus } from "./state.js";
+import { state, quoteTotal, canUndo, favMenus } from "./state.js";
 import { icon } from "./icons.js";
 import { formatWonOrFree } from "./format.js";
 
@@ -214,8 +214,8 @@ function renderList(container) {
 }
 
 function renderTotal(el) {
-  // 합계 = 목록의 모든 항목(단가 × 개수). 빼려면 항목을 삭제(X).
-  el.textContent = won(grandTotal());
+  // 견적 합계 = 목록 전체(단가 × 개수), 단 0 미만은 0원으로(견적이므로 청구 바닥=0).
+  el.textContent = won(quoteTotal());
 }
 
 function escapeHtml(str) {
