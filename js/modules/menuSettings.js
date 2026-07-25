@@ -13,6 +13,7 @@ import {
   addMenu,
   updateMenu,
   deleteMenu,
+  toggleMenuFav,
   reorderFolders,
   moveMenu,
   setFolderCollapsed,
@@ -110,6 +111,7 @@ function renderMenu(folderId, menu) {
   }
   return `
     <li class="settings-menu-item" data-menu-id="${menu.id}">
+      <button class="menu-fav ${menu.fav ? "is-fav" : ""}" data-act="toggle-fav" data-folder-id="${folderId}" data-menu-id="${menu.id}" aria-label="${menu.fav ? "즐겨찾기 해제" : "즐겨찾기"}" aria-pressed="${!!menu.fav}">${icon("star", { size: 20, cls: "menu-fav-icon" })}</button>
       <button class="menu-row" data-act="edit-menu-sheet" data-folder-id="${folderId}" data-menu-id="${menu.id}">
         <span class="settings-menu-name">${esc(menu.name)}</span>
         <span class="settings-menu-price">${formatWonOrFree(menu.price)}</span>
@@ -140,6 +142,11 @@ function onClick(e) {
       break;
     case "edit-menu-sheet":
       openMenuSheet(folderId, menuId);
+      break;
+    case "toggle-fav":
+      // 별 토글 → 상태 반영 후 설정 화면 다시 그림(메인은 notify로 자동 갱신)
+      toggleMenuFav(folderId, menuId);
+      render();
       break;
   }
 }

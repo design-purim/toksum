@@ -127,6 +127,29 @@ export function updateMenu(folderId, menuId, { name, price }) {
   notify();
 }
 
+// 메뉴 즐겨찾기 토글 (메뉴 설정의 별 아이콘). menu.fav 플래그는 folders에 얹혀
+// 기존 LocalStorage·Firestore 저장/동기화에 그대로 함께 저장됩니다.
+export function toggleMenuFav(folderId, menuId) {
+  const folder = state.folders.find((f) => f.id === folderId);
+  if (!folder) return;
+  const menu = folder.menus.find((m) => m.id === menuId);
+  if (!menu) return;
+  menu.fav = !menu.fav;
+  notify();
+}
+
+// 즐겨찾기로 지정된 메뉴 목록 (폴더 순서 → 메뉴 순서 유지).
+// 메인 화면 최상단의 가상 "즐겨찾기" 폴더에서 사용.
+export function favMenus() {
+  const out = [];
+  for (const folder of state.folders) {
+    for (const menu of folder.menus) {
+      if (menu.fav) out.push(menu);
+    }
+  }
+  return out;
+}
+
 export function deleteMenu(folderId, menuId) {
   const folder = state.folders.find((f) => f.id === folderId);
   if (!folder) return;

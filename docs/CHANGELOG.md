@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## v0.13 — 메뉴 즐겨찾기 (2026-07-25)
+> 자주 쓰는 메뉴를 즐겨찾기로 지정 → 메인 화면 폴더 섹션 최상단에 "즐겨찾기" 폴더가 나타남.
+
+- **지정 방식 = 메뉴 설정 행의 별 아이콘** (사용자 선택) — 각 메뉴 행 왼쪽에 별 토글. 평소 회색 아웃라인, 지정하면 **그린 채움**(강조 1색 원칙). 탭 한 번으로 켜기/끄기라 여러 개를 빠르게 지정(iOS·토스 즐겨찾기 패턴). 시트 진입 없이 바로 토글. 행 본문(이름·금액·›) 탭은 기존대로 수정 시트.
+- **데이터 = `menu.fav` 플래그** — 별도 저장소 없이 메뉴 객체에 `fav:true`. 기존 folders LocalStorage·Firestore 동기화에 그대로 편승(추가 저장 코드 0). `state.js`: `toggleMenuFav(folderId,menuId)`(notify로 메인 자동 갱신), `favMenus()`(폴더 순서→메뉴 순서로 fav 메뉴 수집).
+- **메인 가상 "즐겨찾기" 폴더** — fav 메뉴가 1개 이상이면 폴더 섹션 **맨 위**에 별 헤더(채운 그린) + fav 칩. `state.folders`엔 없는 파생 폴더(고정 id `__fav__`). 칩은 원래 `menu-id` 그대로라 눌러도 정상 추가되고, **원래 폴더의 같은 메뉴와 menuId로 합쳐짐**(중복 줄 안 생김, 개수 +1). 캐럿으로 접기 가능(런타임). fav 0개면 폴더 숨김.
+- **변경 파일**: `icons.js`(star 추가), `state.js`(toggleMenuFav·favMenus), `ui.js`(favMenus import, `renderFavFolder`·`menuChip`·`renderFolderBlock`로 분리, FAV_FOLDER_ID), `menuSettings.js`(행 별 버튼 + toggle-fav 케이스), `style.css`(`.settings-menu-item` flex·`.menu-fav`·`.folder-fav-icon`).
+
 ## v0.12 — 개수 직접 입력 + 목록 행 배치 정리 (2026-07-24)
 > 견적 목록 개수 스테퍼를 직접 입력 가능하게 하고, 행 안의 금액/컨트롤 배치를 손봄.
 

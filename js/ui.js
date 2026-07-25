@@ -2,7 +2,7 @@
 // state를 받아 화면을 그립니다. 이 단계에서는 레이아웃/구조를 완성하고,
 // 실제 동작(추가·계산·실행취소 등)은 이후 단계에서 이벤트 핸들러로 연결합니다.
 
-import { state, grandTotal, canUndo } from "./state.js";
+import { state, grandTotal, canUndo, favMenus } from "./state.js";
 import { icon } from "./icons.js";
 import { formatWonOrFree } from "./format.js";
 
@@ -11,6 +11,9 @@ const won = (n) => `${Number(n).toLocaleString("ko-KR")}원`;
 // 브랜드 심볼 "T·" — 잉크 T(currentColor) + 초록 탭닷(--primary). 좌표는 로고 확정 스펙.
 const brandSymbol = `<svg class="logo-sym" viewBox="20 22 60 64" aria-hidden="true"><rect class="ink" x="24" y="25" width="52" height="13" rx="6.5"/><rect class="ink" x="43.5" y="25" width="13" height="36" rx="6.5"/><circle class="dot" cx="50" cy="76" r="7.5"/></svg>`;
 const brandLockup = `<span class="brand">${brandSymbol}<span class="brand-text">톡셈</span></span>`;
+
+// 가상 "즐겨찾기" 폴더의 고정 id (state.folders엔 없는 파생 폴더)
+const FAV_FOLDER_ID = "__fav__";
 
 // 폴더 접힘 상태 (런타임 UI 상태 — 새로고침하면 각 폴더의 "기본값"에서 다시 시작)
 const collapsedFolders = new Set();
@@ -133,31 +136,53 @@ function renderFolders(container) {
       </div>`;
     return;
   }
-  container.innerHTML = state.folders
-    .map((folder) => {
-      const collapsed = collapsedFolders.has(folder.id);
-      return `
-      <div class="folder ${collapsed ? "is-collapsed" : ""}">
-        <button class="folder-name" data-action="toggle-folder" data-folder-id="${folder.id}" aria-expanded="${!collapsed}">
-          ${icon("folder", { size: 17, cls: "folder-icon" })}
-          <span class="folder-label">${escapeHtml(folder.name)}</span>
-          ${collapsed ? `<span class="folder-count">${folder.menus.length}</span>` : ""}
-          ${icon("chevron-down", { size: 18, cls: "folder-caret" })}
-        </button>
-        <div class="menu-grid">
-          ${folder.menus
-            .map(
-              (menu) => `
-            <button class="menu-btn" data-action="add-menu" data-menu-id="${menu.id}">
-              <span class="menu-btn-name">${escapeHtml(menu.name)}</span>
-              <span class="menu-btn-price">${formatWonOrFree(menu.price)}</span>
-            </button>`
-            )
-            .join("")}
-        </div>
-      </div>`;
-    })
-    .join("");
+  // 즐겨찾기 메뉴가 있으면 최상단에 가상 "즐겨찾기" 폴더를 얹는다.
+  const favs = favMenus();
+  const favHtml = favs.length ? renderFavFolder(favs) : "";
+  container.innerHTML = favHtml + state.folders.map(renderFolderBlock).join("");
+}
+
+// 메뉴 칩 하나(일반 폴더·즐겨찾기 폴더 공용).
+function menuChip(menu) {
+  return `
+    <button class="menu-btn" data-action="add-menu" data-menu-id="${menu.id}">
+      <span class="menu-btn-name">${escapeHtml(menu.name)}</span>
+      <span class="menu-btn-price">${formatWonOrFree(menu.price)}</span>
+    </button>`;
+}
+
+// 일반 폴더 한 블록.
+function renderFolderBlock(folder) {
+  const collapsed = collapsedFolders.has(folder.id);
+  return `
+    <div class="folder ${collapsed ? "is-collapsed" : ""}">
+      <button class="folder-name" data-action="toggle-folder" data-folder-id="${folder.id}" aria-expanded="${!collapsed}">
+        ${icon("folder", { size: 17, cls: "folder-icon" })}
+        <span class="folder-label">${escapeHtml(folder.name)}</span>
+        ${collapsed ? `<span class="folder-count">${folder.menus.length}</span>` : ""}
+        ${icon("chevron-down", { size: 18, cls: "folder-caret" })}
+      </button>
+      <div class="menu-grid">
+        ${folder.menus.map(menuChip).join("")}
+      </div>
+    </div>`;
+}
+
+// 가상 "즐겨찾기" 폴더 — 별 아이콘 헤더 + 즐겨찾기 메뉴 칩. 캐럿으로 접기(런타임).
+function renderFavFolder(menus) {
+  const collapsed = collapsedFolders.has(FAV_FOLDER_ID);
+  return `
+    <div class="folder folder-fav ${collapsed ? "is-collapsed" : ""}">
+      <button class="folder-name" data-action="toggle-folder" data-folder-id="${FAV_FOLDER_ID}" aria-expanded="${!collapsed}">
+        ${icon("star", { size: 16, cls: "folder-icon folder-fav-icon" })}
+        <span class="folder-label">즐겨찾기</span>
+        ${collapsed ? `<span class="folder-count">${menus.length}</span>` : ""}
+        ${icon("chevron-down", { size: 18, cls: "folder-caret" })}
+      </button>
+      <div class="menu-grid">
+        ${menus.map(menuChip).join("")}
+      </div>
+    </div>`;
 }
 
 function renderList(container) {

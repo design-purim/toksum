@@ -419,6 +419,12 @@ input {
   color: var(--gray-500);
 }
 
+/* 즐겨찾기 폴더 헤더의 별 — 채운 그린으로 "즐겨찾기"임을 또렷이 */
+.folder-fav-icon {
+  color: var(--primary);
+  fill: currentColor;
+}
+
 /* 메뉴 칩 — 가로 pill, 줄바꿈 흐름(개수 늘어도 컴팩트). 토스 빠른선택 칩 패턴 */
 .menu-grid {
   display: flex;
@@ -887,13 +893,44 @@ input {
   border-top: 1px solid var(--gray-100);
 }
 
+/* 메뉴 행 = 별 토글(왼쪽) + 탭 가능한 본문(이름·금액·›) */
+.settings-menu-item {
+  display: flex;
+  align-items: stretch;
+}
+
+/* 즐겨찾기 별 토글 — 평소 회색 아웃라인, 지정 시 그린 채움(강조 1색 원칙) */
+.menu-fav {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px 0 14px;
+  color: var(--gray-300);
+  transition: transform 0.1s ease, color 0.15s;
+}
+
+.menu-fav:active {
+  transform: scale(0.86);
+}
+
+.menu-fav.is-fav {
+  color: var(--primary);
+}
+
+/* 지정된 별만 안을 채운다(fill=none 속성을 CSS로 덮어씀) */
+.menu-fav.is-fav .menu-fav-icon {
+  fill: currentColor;
+}
+
 /* 탭 가능한 메뉴 행 */
 .menu-row {
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 15px 14px 15px 16px;
+  padding: 15px 14px 15px 6px;
   text-align: left;
   transition: background 0.12s;
 }
