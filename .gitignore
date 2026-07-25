@@ -1,5 +1,6 @@
 # 롤백용 백업 (git 아님, HANDOFF §8)
 *.bak
+*.bak*
 
 # macOS
 .DS_Store
