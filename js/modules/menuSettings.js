@@ -167,6 +167,9 @@ function openMenuSheet(folderId, menuId) {
   const menu = menuId ? folder.menus.find((m) => m.id === menuId) : null;
   const isEdit = !!menu;
   const isFree = isEdit && menu.price === 0; // 가격 0 = 무료(Option A)
+  const isDiscount = isEdit && menu.price < 0; // 음수 가격 = 할인 항목
+  // 금액칸엔 항상 양수(부호는 할인 토글이 담당). 할인 편집 시 절댓값을 보여줌.
+  const priceFieldValue = isEdit ? formatAmount(isDiscount ? Math.abs(menu.price) : menu.price) : "";
 
   const sheet = document.createElement("div");
   sheet.className = "sheet";
@@ -180,7 +183,7 @@ function openMenuSheet(folderId, menuId) {
       </label>
       <label class="sheet-field">
         <span class="sheet-label">금액</span>
-        <input class="field" name="price" type="text" inputmode="numeric" pattern="[0-9,]*" placeholder="${isFree ? "무료" : "0"}" autocomplete="off" value="${isEdit ? formatAmount(menu.price) : ""}" ${isFree ? "disabled" : ""} />
+        <input class="field" name="price" type="text" inputmode="numeric" pattern="[0-9,]*" placeholder="${isFree ? "무료" : "0"}" autocomplete="off" value="${priceFieldValue}" ${isFree ? "disabled" : ""} />
       </label>
       <label class="switch-row">
         <span class="switch-text">
@@ -192,6 +195,16 @@ function openMenuSheet(folderId, menuId) {
           <span class="switch-track" aria-hidden="true"></span>
         </span>
       </label>
+      <label class="switch-row">
+        <span class="switch-text">
+          <span class="switch-title">할인 항목</span>
+          <span class="switch-sub">금액을 마이너스로 넣어 견적에서 빼요</span>
+        </span>
+        <span class="switch">
+          <input type="checkbox" name="discount" ${isDiscount ? "checked" : ""} />
+          <span class="switch-track" aria-hidden="true"></span>
+        </span>
+      </label>
       <button class="btn btn-primary btn-lg" type="submit">저장</button>
       ${isEdit ? `<button class="btn-text-danger" type="button" data-act="delete">${icon("trash", { size: 18 })}<span>메뉴 삭제</span></button>` : ""}
     </form>
@@ -199,23 +212,42 @@ function openMenuSheet(folderId, menuId) {
 
   const priceInput = sheet.querySelector('[name="price"]');
   const freeInput = sheet.querySelector('[name="free"]');
-  // 무료 토글: 켜면 금액칸 비활성(0원 취급), 끄면 다시 입력 가능
-  freeInput.addEventListener("change", () => {
+  const discountInput = sheet.querySelector('[name="discount"]');
+
+  // 금액칸 상태는 "무료"에만 좌우됨(할인은 부호만 담당하므로 칸은 그대로 입력 가능)
+  const syncPriceField = () => {
     priceInput.disabled = freeInput.checked;
     priceInput.placeholder = freeInput.checked ? "무료" : "0";
     if (freeInput.checked) priceInput.value = "";
-    else priceInput.focus();
+  };
+  // 무료 · 할인은 상호배타(둘 다 켤 수 없음)
+  freeInput.addEventListener("change", () => {
+    if (freeInput.checked) discountInput.checked = false;
+    syncPriceField();
+    if (!freeInput.checked) priceInput.focus();
+  });
+  discountInput.addEventListener("change", () => {
+    if (discountInput.checked) freeInput.checked = false;
+    syncPriceField();
+    priceInput.focus();
   });
 
   sheet.addEventListener("submit", (e) => {
     e.preventDefault();
     const name = e.target.elements.name.value.trim();
     const free = e.target.elements.free.checked;
-    const price = free ? 0 : parseAmount(e.target.elements.price.value); // 무료면 0, 아니면 콤마 제거 후 숫자
+    const discount = e.target.elements.discount.checked;
     if (!name) {
       e.target.elements.name.focus();
       return;
     }
+    const abs = parseAmount(e.target.elements.price.value); // 콤마 뗀 양수
+    // 할인인데 금액이 비었으면(0) 저장 거부 — "할인인데 무료로 저장"되는 혼동 방지
+    if (discount && abs === 0) {
+      e.target.elements.price.focus();
+      return;
+    }
+    const price = free ? 0 : discount ? -Math.abs(abs) : abs; // 무료=0, 할인=음수, 그 외=입력액
     if (isEdit) updateMenu(folderId, menuId, { name, price });
     else addMenu(folderId, name, price);
     closeOverlay();
