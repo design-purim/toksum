@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## fix: 클라우드 방어 심화 — 덮어쓰기 직전 스냅샷 보존 + 복구 헬퍼 (2026-08-02)
+> 저장 게이트(로그인 소실 방지)에 이어, **모든 클라우드 덮어쓰기가 1단계 복구 가능**하도록 안전망 추가. (HANDOFF §11 개선 후보 ②·③)
+
+- **`saveUserFolders`를 트랜잭션으로 전환** — 기존 `setDoc` 통째 덮어쓰기 대신 `runTransaction`으로 read→write를 원자적으로. 덮어쓰기 "직전"의 `folders`를 같은 문서의 **`foldersPrev`(+`foldersPrevAt`) 필드에 백업**. 사고든 정상 삭제든 클라우드 문서 자체에서 되돌릴 수 있음(Firestore PITR·유료플랜 불필요).
+- **연속 빈 저장에도 마지막 정상본 유지** — 직전 folders가 **비어있지 않을 때만** `foldersPrev`를 갱신. `merge:true`라 이번에 안 건드리면 기존 스냅샷이 그대로 남음 → 빈값→빈값 저장이 이어져도 마지막 정상 데이터가 보존됨(③의 "빈 값 덮기 방어"를 프릭션 없이 해결 — 정상 삭제도 막지 않으면서 복구 가능).
+- **복구 헬퍼(콘솔)** — `cloud.js loadUserFoldersPrev(uid)` + `main.js window.__restoreCloudPrev()`. 로그인 상태에서 `await __restoreCloudPrev()` → 백업 스냅샷을 현재 메뉴로 되돌리고 저장까지 이어짐(`window.__state`와 같은 개발 편의 라인).
+- **검증**: 8777에서 모듈 로드 무오류, Firestore SDK에 `runTransaction`/`getDoc`/`serverTimestamp` 존재 확인, `__restoreCloudPrev` 등록 확인. ⚠️ **트랜잭션 저장 자체는 실사용자 Firestore를 건드리므로 이 세션에선 실행 안 함**(정적 검증만).
+- **⚠️ 배포 후 확인 필요 — 보안 규칙**: `users/{uid}`에 `foldersPrev`/`foldersPrevAt`를 쓸 수 있어야 함. 규칙이 단순 소유자 체크(`allow read, write: if request.auth.uid == uid`)면 필드 제약 없어 OK. **필드명을 검증하는 엄격 규칙이면 새 필드가 거부돼 저장이 실패**하니 규칙 확인/완화 필요(규칙은 Firebase 콘솔 관리, 저장소에 파일 없음).
+- **변경 파일**: `js/modules/cloud.js`(트랜잭션 saver + `loadUserFoldersPrev`), `js/main.js`(복구 헬퍼). `.bak` 보관.
+
 ## feat: 메뉴 백업 — JSON 내보내기/불러오기 (2026-08-02)
 > 클라우드 사고와 무관하게 **사용자가 직접 메뉴 설정을 파일로 보관·복원**하는 수동 안전망. (HANDOFF §11 개선 후보 ① 구현)
 

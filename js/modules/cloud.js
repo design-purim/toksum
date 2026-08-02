@@ -41,12 +41,34 @@ export async function loadUserFolders(uid) {
   return Array.isArray(data.folders) ? data.folders : null;
 }
 
-// 사용자 폴더를 클라우드에 저장(문서 통째 덮어쓰기).
+// 백업 스냅샷(foldersPrev) 불러오기 — 사고 복구용(saveUserFolders가 보존한 직전 정상본).
+export async function loadUserFoldersPrev(uid) {
+  await ensureDb();
+  const snap = await fs.getDoc(fs.doc(db, "users", uid));
+  if (!snap.exists()) return null;
+  const data = snap.data();
+  return Array.isArray(data.foldersPrev) ? data.foldersPrev : null;
+}
+
+// 사용자 폴더를 클라우드에 저장.
+// ⚠️ 방어 심화: 덮어쓰기 "직전"의 folders를 `foldersPrev` 스냅샷으로 보존한다.
+//   → 어떤 덮어쓰기(사고든 정상 삭제든)든 클라우드 문서 자체에서 1단계 복구 가능
+//     (Firestore PITR·유료플랜 불필요). 복구: 콘솔에서 foldersPrev를 folders로 복사.
+//   - 트랜잭션으로 read→write를 원자적으로: 기기 간 경쟁에서도 스냅샷이 어긋나지 않음.
+//   - 직전 folders가 "비어있지 않을 때만" 스냅샷을 갱신 → 연속 빈 저장에도 마지막 정상본 유지
+//     (merge:true라 이번에 안 건드리면 기존 foldersPrev가 그대로 남음).
 export async function saveUserFolders(uid, folders) {
   await ensureDb();
-  await fs.setDoc(fs.doc(db, "users", uid), {
-    folders,
-    updatedAt: fs.serverTimestamp(),
+  const ref = fs.doc(db, "users", uid);
+  await fs.runTransaction(db, async (tx) => {
+    const snap = await tx.get(ref);
+    const prev = snap.exists() ? snap.data() : null;
+    const payload = { folders, updatedAt: fs.serverTimestamp() };
+    if (prev && Array.isArray(prev.folders) && prev.folders.length > 0) {
+      payload.foldersPrev = prev.folders; // 직전 정상본을 백업으로 보존
+      payload.foldersPrevAt = prev.updatedAt || null;
+    }
+    tx.set(ref, payload, { merge: true });
   });
 }
 

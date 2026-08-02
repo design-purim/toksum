@@ -14,12 +14,13 @@ import {
   undo,
   quoteTotal,
   saveFolders,
+  replaceFolders,
 } from "./state.js";
 import { mountApp, render, toggleFolder } from "./ui.js";
 import { openMenuSettings } from "./modules/menuSettings.js";
 import { showToast } from "./modules/toast.js";
 import { initAuth, openAccountSheet } from "./modules/auth.js";
-import { queueFolderSave } from "./modules/cloud.js";
+import { queueFolderSave, loadUserFoldersPrev } from "./modules/cloud.js";
 import { attachAmountFormatting, parseAmount, formatWonOrFree } from "./format.js";
 
 const wonFmt = (n) => `${Number(n).toLocaleString("ko-KR")}원`;
@@ -226,3 +227,14 @@ init();
 
 // 개발 편의: 콘솔에서 상태 확인용
 window.__state = state;
+
+// 사고 복구용(콘솔): 클라우드 백업 스냅샷(foldersPrev)을 현재 메뉴로 되돌린다.
+// 로그인 상태에서 `await __restoreCloudPrev()` 실행 → 직전 정상본으로 복구되고 저장까지 이어짐.
+window.__restoreCloudPrev = async () => {
+  if (!state.user) return "로그인 후 사용하세요.";
+  const prev = await loadUserFoldersPrev(state.user.uid);
+  if (!prev || !prev.length) return "복구할 이전 스냅샷이 없어요.";
+  replaceFolders(prev); // notify → 저장(게이트 열려있으면 클라우드도 이 값으로 갱신)
+  showToast("이전 백업으로 복구했어요");
+  return `이전 스냅샷 폴더 ${prev.length}개로 복구됨.`;
+};
