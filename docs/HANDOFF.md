@@ -1,7 +1,7 @@
 # HANDOFF — 세션 인수인계 문서
 
 > 완전히 새 세션에서도 작업을 매끄럽게 이어갈 수 있도록 정리한 문서.
-> 최종 갱신: 2026-07-25 (**톡셈** — 범용 견적기, 정적 PWA) — **견적 합계 0원 바닥**(v0.15): 할인이 물건값을 넘어도 합계는 0원까지만(`quoteTotal()=max(0,grandTotal())`, 화면·복사 공통). 개별 할인 줄은 그대로 음수. 그 전: **할인 메뉴(마이너스 금액)**(v0.14): 메뉴 시트 "할인 항목" 토글 → 금액을 음수로 저장(정기 쿠폰·단골할인 등을 톡 눌러 차감). 무료·할인 상호배타. 표시는 **칩/설정행=회색 마이너스, 목록/합계=빨강**(기존 `formatWonOrFree`·`.is-minus`가 처리 → CSS·state 변경 0). 그 전: **메뉴 즐겨찾기**(v0.13): 메뉴 설정 행의 **별 아이콘**으로 즐겨찾기 지정(그린 채움), 메인 폴더 섹션 **최상단에 가상 "즐겨찾기" 폴더**(fav 메뉴 1개 이상일 때). `menu.fav` 플래그(기존 저장/동기화에 편승), fav 칩은 원래 폴더 메뉴와 menuId로 합쳐짐. 그 전: **개수 직접 입력 + 목록 행 배치**(v0.12): 견적 목록 개수 스테퍼 가운데를 입력칸으로(직접 타이핑, 최소 1), 행 배치 `이름·금액·[− n +]·X`로 스왑. 그 전: **무료 메뉴**(v0.11): 메뉴 설정에 "무료" 토글 → `price:0`, 금액 0원인 곳은 어디서나 **"무료"** 표시(합계는 "0원" 유지). 그 전 같은 날: **견적 목록 개편 + 폴더 기본 접힘**(v0.10): ①폴더 "기본 열림/접힘" 설정(폴더 시트 토글, `collapsed` 필드) ②같은 메뉴 다시 누르면 **개수 합치기** + 행마다 `− n +` 스테퍼(단가×개수) ③견적 목록 **체크박스 제거**(합계·복사는 항상 전체, 빼려면 X) ④리스트를 **hairline 한 줄 행**으로(회색 채움 제거). ⚠️ **§10의 결정 3건이 이번에 뒤집힘**(접힘 저장, 합계 전체, hairline) — §10 참고. 그 전: v0.9 로고/브랜드 마크("T·" 심볼, DESIGN.md §5), v0.8 GitHub Pages 배포(라이브 https://design-purim.github.io/toksum/ · 저장소 `design-purim/toksum` Public), v0.7 Firestore 동기화, v0.6 톡셈 브랜딩+그린 테마+Firebase 로그인, v0.5 계산 로직·저장 (CHANGELOG 참고).
+> 최종 갱신: 2026-08-02 (**톡셈** — 범용 견적기, 정적 PWA) — **🚨 데이터 소실 사고 대응(클라우드 동기화)**: 실사용자 메뉴가 로그인 시 사라진 사고를 조사·수정. ①**저장 게이트**(cloud.js): 로그인 시 클라우드 로드가 성공적으로 끝나기 전엔 자동 저장을 막아 빈/오래된 로컬이 Firestore를 덮는 걸 차단(실패 세션은 잠금 유지). ②**메뉴 백업(JSON 내보내기/불러오기)**: 메뉴 설정 하단 "메뉴 백업" 섹션 — 수동 안전망. ③**방어 심화**: `saveUserFolders`를 트랜잭션으로, 덮어쓰기 직전 folders를 `foldersPrev`에 백업(콘솔 `await __restoreCloudPrev()`로 1단계 복구). 보안 규칙은 단순 소유자 체크라 새 필드 저장 OK(확인 완료). ⚠️ **게이트/트랜잭션을 plain setDoc·무조건 저장으로 되돌리지 말 것** — 소실 재발. 상세 §10·§11·CHANGELOG(2026-08-02). ⚠️ **이미 사라진 데이터 복구는 별개**(다른 기기 LocalStorage/`foldersPrev`, §11). 그 전(v0.15): **견적 합계 0원 바닥**: 할인이 물건값을 넘어도 합계는 0원까지만(`quoteTotal()=max(0,grandTotal())`, 화면·복사 공통). 개별 할인 줄은 그대로 음수. 그 전: **할인 메뉴(마이너스 금액)**(v0.14): 메뉴 시트 "할인 항목" 토글 → 금액을 음수로 저장(정기 쿠폰·단골할인 등을 톡 눌러 차감). 무료·할인 상호배타. 표시는 **칩/설정행=회색 마이너스, 목록/합계=빨강**(기존 `formatWonOrFree`·`.is-minus`가 처리 → CSS·state 변경 0). 그 전: **메뉴 즐겨찾기**(v0.13): 메뉴 설정 행의 **별 아이콘**으로 즐겨찾기 지정(그린 채움), 메인 폴더 섹션 **최상단에 가상 "즐겨찾기" 폴더**(fav 메뉴 1개 이상일 때). `menu.fav` 플래그(기존 저장/동기화에 편승), fav 칩은 원래 폴더 메뉴와 menuId로 합쳐짐. 그 전: **개수 직접 입력 + 목록 행 배치**(v0.12): 견적 목록 개수 스테퍼 가운데를 입력칸으로(직접 타이핑, 최소 1), 행 배치 `이름·금액·[− n +]·X`로 스왑. 그 전: **무료 메뉴**(v0.11): 메뉴 설정에 "무료" 토글 → `price:0`, 금액 0원인 곳은 어디서나 **"무료"** 표시(합계는 "0원" 유지). 그 전 같은 날: **견적 목록 개편 + 폴더 기본 접힘**(v0.10): ①폴더 "기본 열림/접힘" 설정(폴더 시트 토글, `collapsed` 필드) ②같은 메뉴 다시 누르면 **개수 합치기** + 행마다 `− n +` 스테퍼(단가×개수) ③견적 목록 **체크박스 제거**(합계·복사는 항상 전체, 빼려면 X) ④리스트를 **hairline 한 줄 행**으로(회색 채움 제거). ⚠️ **§10의 결정 3건이 이번에 뒤집힘**(접힘 저장, 합계 전체, hairline) — §10 참고. 그 전: v0.9 로고/브랜드 마크("T·" 심볼, DESIGN.md §5), v0.8 GitHub Pages 배포(라이브 https://design-purim.github.io/toksum/ · 저장소 `design-purim/toksum` Public), v0.7 Firestore 동기화, v0.6 톡셈 브랜딩+그린 테마+Firebase 로그인, v0.5 계산 로직·저장 (CHANGELOG 참고).
 >
 > 📛 **앱 이름 = 톡셈** (영문 **Toksum** — Tok 톡톡 누르기 + sum 셈·합계). "톡톡 눌러 셈한다". ⚠️ **표지 전용이 아니라 업종 불문 "항목 눌러 빠르게 견적" 범용 툴**로 포지셔닝(사용자 확정). 기존 "표지 디자인 견적 계산기" 표현은 레거시.
 
@@ -63,7 +63,8 @@ js/
     menuSettings.js   # 메뉴 설정 페이지(폴더/메뉴 CRUD, 정렬 모드, 바텀시트 편집, 금액 콤마)
     toast.js          # 하단 토스트(복사 완료 등 가벼운 피드백). showToast(msg) (v0.5)
     auth.js           # Firebase Google 로그인/로그아웃 + 세션복원 + 계정 바텀시트 + 로그인 시 클라우드 동기화 (v0.6~0.7)
-    cloud.js          # Firestore 로드/저장: loadUserFolders/saveUserFolders (users/{uid}.folders) (v0.7)
+    cloud.js          # Firestore 로드/저장 (v0.7) + 소실방지(2026-08-02): 저장게이트(enable/disable/queueFolderSave),
+                      #   saveUserFolders=트랜잭션(직전 folders를 foldersPrev에 백업), loadUserFoldersPrev(복구용)
   vendor/
     sortable.esm.js   # SortableJS 1.15.6 (MIT, 자체호스팅, ESM)
 docs/                 # SPEC/UI/TODO(초안) + DESIGN.md + HANDOFF.md(이 문서)
@@ -90,6 +91,7 @@ docs/                 # SPEC/UI/TODO(초안) + DESIGN.md + HANDOFF.md(이 문서
 - [x] **메뉴 즐겨찾기 (v0.13, 완료·검증)** — 메뉴 설정 행 왼쪽 별 토글(`toggleMenuFav`, `menu.fav`), 메인 최상단 가상 "즐겨찾기" 폴더(`favMenus()`, id `__fav__`). fav 칩은 원래 폴더 메뉴와 menuId로 합쳐짐(중복 방지). fav 0개면 폴더 숨김. 8777에서 토글·합치기·무료표시 검증(§10).
 - [x] **할인 메뉴 (마이너스 금액) (v0.14, 완료·검증)** — 메뉴 시트 "할인 항목" 토글 → `price = -Math.abs(입력액)`. 무료·할인 상호배타, 할인 0원 저장 거부. 칩/설정행=회색 마이너스, 목록/합계=빨강. `menuSettings.js`만 수정(표시·저장은 기존 코드). 8777에서 추가·칩색·목록빨강·편집재진입·상호배타 검증(§10).
 - [x] **견적 합계 0원 바닥 (v0.15, 완료·검증)** — `quoteTotal()=max(0,grandTotal())`, 화면 합계바·복사 텍스트 공통. 원값 grandTotal은 유지(음수 가능), 개별 할인 줄도 그대로 음수. 8777에서 원값 −5,500→0원 검증(§10).
+- [x] **🚨 클라우드 소실 방지 3중 안전망 (2026-08-02, 완료·검증)** — 실사용자 메뉴 소실 사고 대응. ①**저장 게이트**(cloud.js `enableFolderSync/disableFolderSync/queueFolderSave`, auth.js 제어): 로그인 클라우드 로드 성공 전엔 자동 저장 차단, 실패 세션은 잠금 유지. ②**메뉴 백업**(menuSettings.js): JSON 내보내기/불러오기(수동 안전망). ③**방어 심화**(cloud.js): `saveUserFolders`를 `runTransaction`으로 → 덮어쓰기 직전 folders를 `foldersPrev`에 백업 + 복구 헬퍼 `window.__restoreCloudPrev()`. 보안 규칙(단순 소유자 체크) 새 필드 저장 호환 확인. 8777에서 모듈 로드·백업 왕복·SDK API 검증(트랜잭션 저장은 실데이터라 미실행). 상세 §10·§11·CHANGELOG.
 
 **클릭 액션(main.js `onClick`) 현황:** 전부 연결됨 — `open-menu, toggle-folder, add-menu, add-direct, half, discount, copy, remove-item, qty-inc, qty-dec, undo, clear, open-account`(계정 바텀시트). 개수 입력칸 `qty-input`은 별도 `change`/`keydown(Enter)` 리스너. (redo는 v0.4에서 제거, 체크박스 `toggle-item`은 v0.10에서 제거)
 
@@ -213,5 +215,17 @@ docs/                 # SPEC/UI/TODO(초안) + DESIGN.md + HANDOFF.md(이 문서
   2. **Firestore PITR(특정 시점 복원)** — Firebase Blaze 요금제 + **사전 활성화** 시에만, 최근 7일 이내. 미설정이면 불가.
   3. 그 외 자동 복구 없음(Firestore 문서 히스토리 기본 미보관, 앱에 클라우드 백업 코드 없음).
 - **콘솔 확인 링크**: Firestore 데이터 `https://console.firebase.google.com/project/toksum-107fe/firestore/data` · Auth 사용자(uid 확인) `https://console.firebase.google.com/project/toksum-107fe/authentication/users`. 개발자 계정(relaxrimm)으로 로그인해 `users/{uid}.folders` 확인.
-- **향후 개선 후보**: ~~①메뉴 설정 **JSON 내보내기/불러오기**(수동 백업)~~ ✅ **완료(2026-08-02)** — 메뉴 설정 하단 "메뉴 백업" 섹션. ~~②`saveUserFolders`를 setDoc 통째덮기 대신 이전본 스냅샷 보관~~ ✅ **완료(2026-08-02)** — 트랜잭션 + `foldersPrev` 스냅샷 + `__restoreCloudPrev()` 복구 헬퍼. ~~③클라우드 저장 전 빈 값 덮기 방어~~ ✅ **완료(2026-08-02, ②에 포함)** — "직전이 비어있지 않을 때만 스냅샷 갱신"으로 정상 삭제를 막지 않으면서 마지막 정상본 보존. **➡ 남은 방어는 사실상 없음. 이제 확인할 것은 배포 후 보안 규칙(foldersPrev 쓰기 허용)뿐.**
-- **⚠️ 배포 후 확인(보안 규칙)**: `foldersPrev`/`foldersPrevAt` 저장이 되려면 `users/{uid}` 쓰기 규칙이 필드를 막지 않아야 함. 단순 소유자 체크면 OK. 엄격 규칙이면 저장 실패 → 콘솔에서 완화. 규칙은 Firebase 콘솔에서만 관리(저장소에 파일 없음).
+- **향후 개선 후보**: ~~①메뉴 설정 **JSON 내보내기/불러오기**(수동 백업)~~ ✅ **완료(2026-08-02)** — 메뉴 설정 하단 "메뉴 백업" 섹션. ~~②`saveUserFolders`를 setDoc 통째덮기 대신 이전본 스냅샷 보관~~ ✅ **완료(2026-08-02)** — 트랜잭션 + `foldersPrev` 스냅샷 + `__restoreCloudPrev()` 복구 헬퍼. ~~③클라우드 저장 전 빈 값 덮기 방어~~ ✅ **완료(2026-08-02, ②에 포함)** — "직전이 비어있지 않을 때만 스냅샷 갱신"으로 정상 삭제를 막지 않으면서 마지막 정상본 보존. **➡ 남은 방어는 사실상 없음.**
+- **✅ 보안 규칙 확인 완료(2026-08-02)**: 현재 규칙은 **단순 소유자 체크**라 `foldersPrev`/`foldersPrevAt` 새 필드 저장 문제없음. 규칙 원문:
+  ```
+  rules_version = '2';
+  service cloud.firestore {
+    match /databases/{database}/documents {
+      match /users/{uid} {
+        allow read, write: if request.auth != null && request.auth.uid == uid;
+      }
+    }
+  }
+  ```
+  (필드명을 검증하지 않으므로 어떤 필드든 본인이면 저장 가능. 규칙은 Firebase 콘솔에서만 관리 — 저장소에 파일 없음.)
+- **🔁 사고 시 복구(이제 앱 자체 지원)**: 그분 계정으로 로그인 → 콘솔에서 `await __restoreCloudPrev()`(직전 백업 `foldersPrev`로 되돌림). 또는 Firebase 콘솔에서 해당 문서의 `foldersPrev`를 `folders`로 복사. (2026-08-02 방어 심화 이후 새로 저장된 문서부터 `foldersPrev`가 쌓임 — 그 이전 사고엔 위 "복구 경로" 참고.)
