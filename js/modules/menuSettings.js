@@ -7,6 +7,7 @@
 
 import {
   state,
+  uid,
   addFolder,
   renameFolder,
   deleteFolder,
@@ -17,10 +18,12 @@ import {
   reorderFolders,
   moveMenu,
   setFolderCollapsed,
+  replaceFolders,
 } from "../state.js";
 import { icon } from "../icons.js";
 import { openPage, closePage } from "./page.js";
 import { openOverlay, closeOverlay } from "./overlay.js";
+import { showToast } from "./toast.js";
 import { attachAmountFormatting, parseAmount, formatAmount, formatWonOrFree } from "../format.js";
 import Sortable from "../vendor/sortable.esm.js";
 
@@ -68,6 +71,18 @@ function render() {
       <div class="settings-folder-list">
         ${state.folders.map(renderFolder).join("") || `<p class="settings-empty">폴더를 추가해 메뉴를 정리해보세요.</p>`}
       </div>
+      ${
+        reordering
+          ? ""
+          : `<section class="settings-backup">
+               <h3 class="settings-backup-title">메뉴 백업</h3>
+               <p class="settings-backup-desc">메뉴 설정을 파일로 저장해 두거나, 저장한 파일에서 되살려요.</p>
+               <div class="settings-backup-actions">
+                 <button class="btn-backup" type="button" data-act="export-menus">${icon("download", { size: 18 })}<span>내보내기</span></button>
+                 <button class="btn-backup" type="button" data-act="import-menus">${icon("upload", { size: 18 })}<span>불러오기</span></button>
+               </div>
+             </section>`
+      }
     </div>
   `;
   if (reordering) initSortables();
@@ -148,6 +163,12 @@ function onClick(e) {
       toggleMenuFav(folderId, menuId);
       render();
       break;
+    case "export-menus":
+      exportMenus();
+      break;
+    case "import-menus":
+      pickImportFile();
+      break;
   }
 }
 
@@ -158,6 +179,88 @@ function onSubmit(e) {
     addFolder(input.value);
     render();
   }
+}
+
+// ===== 메뉴 백업 (JSON 내보내기 / 불러오기) =====
+// 수동 안전망: 클라우드 사고와 무관하게 사용자가 직접 메뉴 설정을 파일로 보관·복원.
+// (HANDOFF §11 개선 후보 ①) 폴더/메뉴 구조를 JSON으로 내려받고, 같은 형식으로 되살림.
+
+// 현재 폴더/메뉴를 JSON 파일로 다운로드.
+function exportMenus() {
+  if (!state.folders.length) return void showToast("내보낼 메뉴가 없어요");
+  const payload = {
+    app: "toksum",
+    type: "menu-backup",
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    folders: state.folders,
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `toksum-menu-backup-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  showToast("메뉴를 파일로 내보냈어요");
+}
+
+// 파일 선택창을 열어 백업 JSON을 고르게 함.
+function pickImportFile() {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "application/json,.json";
+  input.addEventListener("change", () => {
+    const file = input.files && input.files[0];
+    if (file) applyImport(file);
+  });
+  input.click();
+}
+
+// 백업 JSON을 검증·정규화한 뒤(확인 후) 현재 메뉴를 교체.
+async function applyImport(file) {
+  let parsed;
+  try {
+    parsed = JSON.parse(await file.text());
+  } catch {
+    return void showToast("올바른 백업 파일이 아니에요");
+  }
+  // 우리 포맷({folders:[...]}) 또는 folders 배열만 담긴 파일 둘 다 허용.
+  const folders = normalizeFolders(Array.isArray(parsed) ? parsed : parsed && parsed.folders);
+  if (!folders) return void showToast("올바른 백업 파일이 아니에요");
+
+  const menuCount = folders.reduce((n, f) => n + f.menus.length, 0);
+  const ok = confirm(
+    `이 파일로 메뉴를 교체할까요?\n폴더 ${folders.length}개 · 메뉴 ${menuCount}개\n\n지금 화면의 메뉴는 교체됩니다.`
+  );
+  if (!ok) return;
+
+  replaceFolders(folders); // notify → LocalStorage 저장(+회원이면 클라우드 저장, 게이트 열려있을 때)
+  render();
+  showToast("메뉴를 불러왔어요");
+}
+
+// 외부 파일이라 신뢰하지 않고 형태를 강제한다(예상 필드만 남기고 값 정규화).
+function normalizeFolders(raw) {
+  if (!Array.isArray(raw)) return null;
+  return raw.map((f) => ({
+    id: typeof f?.id === "string" && f.id ? f.id : uid("folder"),
+    name: String(f?.name ?? "").trim() || "새 폴더",
+    collapsed: !!f?.collapsed,
+    menus: Array.isArray(f?.menus)
+      ? f.menus.map((m) => {
+          const menu = {
+            id: typeof m?.id === "string" && m.id ? m.id : uid("menu"),
+            name: String(m?.name ?? "").trim() || "메뉴",
+            price: Number(m?.price) || 0, // 음수(할인)·0(무료)도 그대로 허용
+          };
+          if (m?.fav) menu.fav = true;
+          return menu;
+        })
+      : [],
+  }));
 }
 
 // ===== 바텀시트: 메뉴 추가/수정 =====

@@ -212,4 +212,4 @@ docs/                 # SPEC/UI/TODO(초안) + DESIGN.md + HANDOFF.md(이 문서
   2. **Firestore PITR(특정 시점 복원)** — Firebase Blaze 요금제 + **사전 활성화** 시에만, 최근 7일 이내. 미설정이면 불가.
   3. 그 외 자동 복구 없음(Firestore 문서 히스토리 기본 미보관, 앱에 클라우드 백업 코드 없음).
 - **콘솔 확인 링크**: Firestore 데이터 `https://console.firebase.google.com/project/toksum-107fe/firestore/data` · Auth 사용자(uid 확인) `https://console.firebase.google.com/project/toksum-107fe/authentication/users`. 개발자 계정(relaxrimm)으로 로그인해 `users/{uid}.folders` 확인.
-- **향후 개선 후보(미구현)**: ①메뉴 설정 **JSON 내보내기/불러오기**(수동 백업) — 저비용·고효용, 다음 다듬기 때 1순위 후보. ②`saveUserFolders`를 setDoc 통째덮기 대신 **필드 merge**나 이전본 스냅샷 보관. ③클라우드 저장 전 "비어있지 않던 데이터를 빈 값으로 덮기 직전" 확인/스냅샷.
+- **향후 개선 후보**: ~~①메뉴 설정 **JSON 내보내기/불러오기**(수동 백업)~~ ✅ **구현 완료(2026-08-02)** — 메뉴 설정 하단 "메뉴 백업" 섹션(CHANGELOG feat 참고). ②`saveUserFolders`를 setDoc 통째덮기 대신 **필드 merge**나 이전본 스냅샷 보관(미구현). ③클라우드 저장 전 "비어있지 않던 데이터를 빈 값으로 덮기 직전" 확인/스냅샷(미구현).

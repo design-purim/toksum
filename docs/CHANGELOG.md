@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## feat: 메뉴 백업 — JSON 내보내기/불러오기 (2026-08-02)
+> 클라우드 사고와 무관하게 **사용자가 직접 메뉴 설정을 파일로 보관·복원**하는 수동 안전망. (HANDOFF §11 개선 후보 ① 구현)
+
+- **위치**: 메뉴 설정 화면 하단 "메뉴 백업" 섹션(폴더 목록과 hairline 구분). 정렬 모드에선 숨김. 버튼 2개(내보내기·불러오기)는 **회색 tonal**(강조색 안 씀, §10 "강조 1색" 유지). 아이콘 `download`/`upload`를 `icons.js`에 추가.
+- **내보내기**: `state.folders`를 `{app,type:"menu-backup",version:1,exportedAt,folders}` JSON Blob으로 만들어 `toksum-menu-backup-YYYY-MM-DD.json` 다운로드. 폴더 0개면 거부(토스트).
+- **불러오기**: 파일 선택 → JSON 파싱·**정규화**(외부 파일 불신 → 예상 필드만 남기고 값 강제: 문자열 금액→숫자, 음수(할인)·0(무료) 보존, `fav` 보존, 잡필드 제거, `id` 없으면 `uid()` 생성, `collapsed` 기본 false) → 폴더/메뉴 개수 확인창 → `replaceFolders()`. 우리 포맷(`{folders}`)과 folders 배열만 담긴 파일 둘 다 허용. 잘못된 파일은 상태 변경 없이 토스트.
+- **복원=자동 저장**: `replaceFolders`의 notify가 LocalStorage 저장(+회원이면 게이트 열린 상태에서 클라우드 저장)까지 태움 → 불러오면 그대로 지속.
+- **검증(8777)**: 내보내기 실제 출력(파일명·JSON) 가로채 확인, 불러오기 왕복(문자열금액 5000·할인 −1000·fav·잡필드제거·collapsed기본·LocalStorage반영), 잘못된 입력 3종(깨진 JSON·객체·숫자) 모두 거부, 콘솔 에러 0.
+- **변경 파일**: `js/icons.js`(download/upload), `js/modules/menuSettings.js`(백업 섹션+로직), `css/style.css`(`.settings-backup`·`.btn-backup`). `.bak` 백업 보관.
+
 ## fix: 클라우드 동기화 데이터 소실 방지 — 저장 게이트 (2026-08-02)
 > ⚠️ **실사용자 메뉴 전량 소실 사고 대응.** 로그인 시 **빈/오래된 로컬 폴더가 Firestore를 통째로 덮어써** 메뉴가 사라지는 경쟁 상태가 있었다. 근본 원인은 "클라우드를 *불러오기 전에* 로컬 상태를 *저장*하는 타이머가 걸리는" 순서.
 

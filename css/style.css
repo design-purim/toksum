@@ -1150,6 +1150,51 @@ input {
   opacity: 0.6;
 }
 
+/* ===== 메뉴 백업 (내보내기/불러오기) ===== */
+/* 유틸 성격 → 폴더 목록과 hairline으로 구분, 보조 액션은 회색 tonal(강조색 안 씀) */
+.settings-backup {
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
+  margin-top: 4px;
+}
+
+.settings-backup-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin-left: 4px;
+}
+
+.settings-backup-desc {
+  font-size: 13px;
+  color: var(--text-sub);
+  line-height: 1.5;
+  margin: 4px 4px 12px;
+}
+
+.settings-backup-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-backup {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 13px;
+  background: var(--gray-100);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.btn-backup:active {
+  background: var(--gray-200);
+}
+
 /* ===== Account / Login ===== */
 /* 헤더 아바타 — 로그인하면 사람 아이콘 대신 프로필 사진/이니셜 원형으로 */
 .account-avatar {
