@@ -19,7 +19,7 @@ import { mountApp, render, toggleFolder } from "./ui.js";
 import { openMenuSettings } from "./modules/menuSettings.js";
 import { showToast } from "./modules/toast.js";
 import { initAuth, openAccountSheet } from "./modules/auth.js";
-import { saveUserFolders } from "./modules/cloud.js";
+import { queueFolderSave } from "./modules/cloud.js";
 import { attachAmountFormatting, parseAmount, formatWonOrFree } from "./format.js";
 
 const wonFmt = (n) => `${Number(n).toLocaleString("ko-KR")}원`;
@@ -35,7 +35,9 @@ function init() {
   subscribe(() => {
     saveFolders(); // LocalStorage는 회원/비회원 공통으로 항상 저장(오프라인 대비)
     render(root);
-    maybeSyncFoldersToCloud(); // 회원이면 폴더 변경분을 Firestore에도 저장(디바운스)
+    // 회원이면 폴더 변경분을 Firestore에도 저장(디바운스). 단, 로그인 직후 클라우드 로드가
+    // 성공적으로 끝나기 전(또는 실패 세션)에는 cloud.js의 게이트가 저장을 막는다(소실 방지).
+    if (state.user) queueFolderSave(state.user.uid, state.folders);
   });
 
   // 금액 인풋: 입력 즉시 천단위 콤마 + 맨 앞 0 제거
@@ -67,25 +69,6 @@ function init() {
 
   // Firebase 로그인 초기화(설정돼 있으면 세션 복원 → 헤더 아바타 자동 표시)
   initAuth();
-}
-
-// 회원이면 폴더(메뉴 설정) 변경분을 Firestore에 저장.
-//  - folders가 실제로 바뀐 경우에만(직전 저장분과 JSON 비교) → items 변경엔 안 씀
-//  - 800ms 디바운스로 연속 편집(타이핑·드래그)을 한 번의 쓰기로 묶음
-let lastSyncedFoldersJson = null;
-let cloudSaveTimer = null;
-function maybeSyncFoldersToCloud() {
-  const user = state.user;
-  if (!user) return; // 비회원은 LocalStorage만
-  const json = JSON.stringify(state.folders);
-  if (json === lastSyncedFoldersJson) return; // 폴더 변화 없음(예: items만 바뀜)
-  lastSyncedFoldersJson = json;
-  clearTimeout(cloudSaveTimer);
-  cloudSaveTimer = setTimeout(() => {
-    saveUserFolders(user.uid, state.folders).catch((e) =>
-      console.error("[cloud] 폴더 저장 실패", e)
-    );
-  }, 800);
 }
 
 function onClick(e) {

@@ -49,3 +49,41 @@ export async function saveUserFolders(uid, folders) {
     updatedAt: fs.serverTimestamp(),
   });
 }
+
+// ===== 로그인 사용자 폴더 자동 저장 (게이트 + 디바운스) =====
+// ⚠️ 데이터 소실 방지의 핵심: 초기 클라우드 로드가 "성공적으로" 끝나기 전에는
+//    어떤 자동 저장도 막는다. 로그인 직후엔 이 기기의 로컬 폴더가 (다른 기기에서
+//    편집됐거나·키 상향·시크릿모드 등으로) 비었거나 오래됐을 수 있는데, 그 상태가
+//    setDoc(통째 덮어쓰기)으로 클라우드를 지워버리는 사고가 있었다.
+//  - enableFolderSync: syncOnLogin이 클라우드를 반영(또는 첫 업로드)에 성공한 뒤에만 호출 → 저장 허용
+//  - disableFolderSync: 로그아웃·로드 실패 시 → 저장 잠금(클라우드 상태를 모르므로 이 세션엔 안 씀)
+//  - queueFolderSave: 허용된 상태에서만, folders가 실제로 바뀐 경우 800ms 디바운스로 저장
+let syncEnabled = false;
+let baselineJson = null; // 마지막으로 클라우드와 일치한다고 아는 folders JSON(불필요한 재저장 방지)
+let saveTimer = null;
+
+// 초기 로드/첫 업로드 성공 후 호출: 지금 folders를 기준선으로 잡고 저장을 허용.
+export function enableFolderSync(folders) {
+  baselineJson = JSON.stringify(folders);
+  syncEnabled = true;
+}
+
+// 로그아웃/로드 실패 시: 저장을 잠그고 대기 중인 저장 타이머를 취소.
+export function disableFolderSync() {
+  syncEnabled = false;
+  baselineJson = null;
+  clearTimeout(saveTimer);
+  saveTimer = null;
+}
+
+// folders가 실제로 바뀐 경우에만 디바운스 저장. 게이트가 닫혀 있으면 아무것도 안 함.
+export function queueFolderSave(uid, folders) {
+  if (!syncEnabled || !uid) return;
+  const json = JSON.stringify(folders);
+  if (json === baselineJson) return; // 폴더 변화 없음(예: items만 바뀜) → 스킵
+  baselineJson = json;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    saveUserFolders(uid, folders).catch((e) => console.error("[cloud] 폴더 저장 실패", e));
+  }, 800);
+}

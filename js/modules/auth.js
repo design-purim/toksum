@@ -14,7 +14,7 @@ import { icon } from "../icons.js";
 import { openOverlay, closeOverlay } from "./overlay.js";
 import { showToast } from "./toast.js";
 import { firebaseConfig, isFirebaseConfigured } from "../firebase-config.js";
-import { loadUserFolders, saveUserFolders } from "./cloud.js";
+import { loadUserFolders, saveUserFolders, enableFolderSync, disableFolderSync } from "./cloud.js";
 
 const SDK = "https://www.gstatic.com/firebasejs/11.1.0";
 
@@ -48,7 +48,13 @@ export async function initAuth() {
     fb = { auth, ...authMod };
     // 로그인/로그아웃·재방문 세션 복원 → 상태에 반영(헤더 아바타 등 자동 갱신)
     fb.onAuthStateChanged(auth, async (user) => {
-      if (!user) return void setUser(null);
+      if (!user) {
+        disableFolderSync(); // 로그아웃: 자동 저장 잠금
+        return void setUser(null);
+      }
+      // ⚠️ 클라우드 로드가 끝나기 전엔 저장을 잠근다. setUser의 notify가 로컬(빈/오래된)
+      //    폴더를 클라우드에 덮어쓰는 것을 막기 위함(데이터 소실 방지).
+      disableFolderSync();
       setUser(toProfile(user));
       await syncOnLogin(user.uid); // 로그인 시 클라우드 메뉴 설정 동기화
     });
@@ -63,13 +69,19 @@ async function syncOnLogin(uid) {
   try {
     const cloud = await loadUserFolders(uid);
     if (cloud && cloud.length) {
-      replaceFolders(cloud);
+      replaceFolders(cloud); // 클라우드에 데이터가 있으면 그걸로 반영(다른 기기 데이터 따라옴)
     } else {
+      // cloud === null 은 "문서 없음"(첫 로그인)일 때만 옴 — 일시적 오류는 아래 catch로 감.
+      // 이 기기의 메뉴 설정을 클라우드에 최초 업로드.
       await saveUserFolders(uid, state.folders);
     }
+    // ✅ 여기까지 왔으면 클라우드와 상태가 일치 → 이제부터 자동 저장 허용.
+    enableFolderSync(state.folders);
   } catch (e) {
+    // 로드/초기 업로드 실패: 클라우드 상태를 모르므로 이 세션엔 저장하지 않는다(덮어쓰기 사고 방지).
+    disableFolderSync();
     console.error("[cloud] 로그인 동기화 실패", e);
-    showToast("클라우드 동기화에 실패했어요");
+    showToast("클라우드 동기화에 실패했어요. 이 기기의 변경은 저장되지 않아요.");
   }
 }
 

@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## fix: 클라우드 동기화 데이터 소실 방지 — 저장 게이트 (2026-08-02)
+> ⚠️ **실사용자 메뉴 전량 소실 사고 대응.** 로그인 시 **빈/오래된 로컬 폴더가 Firestore를 통째로 덮어써** 메뉴가 사라지는 경쟁 상태가 있었다. 근본 원인은 "클라우드를 *불러오기 전에* 로컬 상태를 *저장*하는 타이머가 걸리는" 순서.
+
+- **원인 추적**: 로그인/세션복원 시 `onAuthStateChanged`가 `setUser()`(→`notify()`) 먼저 실행 → main.js 구독자가 무조건 클라우드 저장을 예약(이때 folders는 아직 **로컬** 값). 이어 `syncOnLogin`이 클라우드를 로드해 반영하지만, **①클라우드 읽기 실패**(오프라인·일시 오류) 시 catch는 토스트만 띄우고 예약된 저장은 그대로 발사 → 빈 로컬이 클라우드를 `[]`로 덮음. **②읽기가 800ms(디바운스)보다 느림** 시에도 빈 로컬이 먼저 업로드됨. 로컬이 비는 방아쇠: LocalStorage 키 v1→v2 상향(v0.7), 다른 기기/브라우저, 시크릿모드, 사이트 데이터 삭제.
+- **수정 = 저장 게이트(cloud.js)**: `enableFolderSync/disableFolderSync/queueFolderSave` 도입. **초기 클라우드 로드가 "성공적으로" 끝나기 전에는 어떤 자동 저장도 막는다.**
+  - `auth.js`: 인증 콜백 진입 즉시 `disableFolderSync()`(로그아웃 포함) → setUser의 notify가 로컬을 못 올림. `syncOnLogin`이 클라우드 반영(또는 첫 로그인 업로드)에 **성공한 뒤에만** `enableFolderSync(state.folders)`. 실패 시 `disableFolderSync()`로 **그 세션 내내 저장 잠금**(클라우드 상태를 모르므로) + 안내 토스트 문구 강화("이 기기의 변경은 저장되지 않아요").
+  - `main.js`: 인라인 `maybeSyncFoldersToCloud`(+ `lastSyncedFoldersJson`/`cloudSaveTimer`) 제거 → 구독자는 `queueFolderSave(uid, folders)`만 호출. 디바운스·변경비교(baseline)·게이트는 cloud.js가 소유.
+- **비회원·정상 로그인 영향 없음**: 비회원은 기존대로 LocalStorage만. 정상망 로그인은 로드 성공 후 게이트가 열려 이전과 동일하게 저장. **첫 로그인**(클라우드 문서 없음=null)은 로컬 업로드가 정상 경로라 그대로 동작.
+- **변경 파일**: `js/modules/cloud.js`(게이트+디바운스 saver), `js/modules/auth.js`(게이트 제어), `js/main.js`(구독자 배선). 8777에서 모듈 로드·렌더 무오류 확인. 백업 `.bak` 보관.
+- **복구는 별개**: 이 패치는 **재발 방지**만. 이미 덮인 데이터는 다른 기기 LocalStorage(`copy(localStorage.getItem('coverCalc.folders.v2'))`)나 Firestore PITR(사전 설정 시)로만 복구 가능. ➡ HANDOFF §11.
+
 ## 라이선스 — All Rights Reserved (2026-07-25)
 > 루트 `LICENSE`가 "MIT License" 한 줄(본문 없는 불완전 파일)뿐이라 GitHub가 MIT로 자동 표시하던 것을 바로잡음. **공개 재사용을 원치 않아 오픈소스(MIT)를 걷어내고 독점("All Rights Reserved")으로 명시.**
 
