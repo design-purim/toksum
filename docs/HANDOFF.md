@@ -13,12 +13,17 @@
 
 ## 0. 한 줄 요약
 
-**톡셈** — 미리 등록한 항목(메뉴)을 톡톡 눌러 빠르게 견적을 만들고 복사하는 모바일 우선 정적 웹앱(HTML/CSS/Vanilla JS + Firebase + GitHub Pages). 업종 불문 범용. **디자인·구조 + 계산 로직(추가·50%·할인·체크합계·복사·실행취소·비우기) + 그린 테마 + Firebase Google 로그인 + Firestore 다기기 동기화(회원 메뉴 설정) + GitHub Pages 배포 + 로고/브랜드 마크까지 완료.** 라이브: https://design-purim.github.io/toksum/ . **핵심 기능·배포·로고 모두 끝났고, 남은 건 다듬기(PWA 설치 셸/디자인 리듬/모션).** 배포 사이트 Google 로그인도 정상 동작(Firebase 승인 도메인 추가 완료).
+**톡셈** — 미리 등록한 항목(메뉴)을 톡톡 눌러 빠르게 견적을 만들고 복사하는 모바일 우선 정적 웹앱(HTML/CSS/Vanilla JS + Firebase + GitHub Pages). 업종 불문 범용. **디자인·구조 + 계산 로직(추가·50%·할인·체크합계·복사·실행취소·비우기) + 그린 테마 + Firebase Google 로그인 + Firestore 다기기 동기화(회원 메뉴 설정) + GitHub Pages 배포 + 로고/브랜드 마크까지 완료.** 라이브: https://design-purim.github.io/toksum/ . **핵심 기능·배포·로고·PWA 설치 셸까지 전부 끝났다.** 배포 사이트 Google 로그인 정상(Firebase 승인 도메인 추가 완료).
+**v0.17로 안드로이드 폰에 앱(WebAPK)으로 설치까지 됨** — 스토어 출시는 안 함(사용자 결정). 실기기 검증 4종 통과.
+➡️ **남은 건 ①개인정보처리방침 ②디자인 다듬기(리듬·타이포·모션) 뿐.** 상세는 §8.
 
 ## 1. 기술 스택 / 제약
 
 - HTML5 / CSS3 / **Vanilla JS (ES Modules, 빌드 도구 없음)**
-- Firebase Auth(Google) + Firestore (아직 미연동, TODO 7~8)
+- Firebase Auth(Google) + Firestore — **연동 완료**(v0.6~0.7). 회원 메뉴 설정 다기기 동기화 실동작.
+  ⚠️ 소실 방지 장치가 걸려 있다(저장 게이트·트랜잭션·`foldersPrev` 스냅샷) — §10·§11 필독, 되돌리지 말 것.
+- **PWA 설치 셸**(v0.17) — `manifest.json` + `sw.js` + 아이콘 PNG. 안드로이드에 WebAPK로 설치됨.
+  ⚠️ 서비스워커 규칙 4건이 §10에 있다(네트워크 우선·localhost 미등록·상대경로·maskable 별도본).
 - GitHub Pages 배포 (정적)
 - 라이브러리는 **완전 무료(OFL/MIT/ISC)만**, 가능하면 **자체 호스팅**(오프라인/무의존).
 
@@ -48,7 +53,11 @@ with socketserver.TCPServer(("127.0.0.1", 8777), H) as httpd:
 ## 3. 파일 구조 & 아키텍처
 
 ```
-index.html            # 셸. Wanted Sans(CDN) + style.css + main.js(module) 로드
+index.html            # 셸. Wanted Sans(CDN) + style.css + main.js(module) + manifest 링크
+manifest.json         # PWA 설치 정보 (v0.17) — standalone/portrait, 스플래시 흰색, 아이콘 4종
+                      #  ⚠️ 경로 전부 상대(./) — 서브경로(/toksum/)에서 절대경로면 조용히 설치 실패
+sw.js                 # 서비스워커 (v0.17) — 우리 코드=네트워크 우선 / 폰트·아이콘=캐시 우선
+                      #  ⚠️ §10의 규칙 4건 필독. VERSION 상수로 구버전 캐시 일괄 폐기
 css/style.css         # 디자인 토큰(:root) + 전체 스타일
 js/
   main.js             # 진입점: mountApp→render, subscribe 재렌더, 클릭 라우팅, initAuth, 회원 폴더 클라우드 저장(디바운스)
@@ -67,6 +76,13 @@ js/
                       #   saveUserFolders=트랜잭션(직전 folders를 foldersPrev에 백업), loadUserFoldersPrev(복구용)
   vendor/
     sortable.esm.js   # SortableJS 1.15.6 (MIT, 자체호스팅, ESM)
+    Sortable.min.js   # ⚠️ 죽은 파일 — 아무데서도 import 안 됨. 삭제 예정(TODO)
+assets/
+  icon-{192,512}.png            # PWA any 아이콘 (라운드 사각, 모서리 투명)
+  icon-maskable-{192,512}.png   # PWA maskable (풀블리드 — 런처가 자체 모양으로 자름)
+  icon-180.png                  # apple-touch
+  toksum-maskable-dark.svg      # maskable 원본 (v0.17 신규, 글리프 0.78배)
+  toksum-icon-{dark,green}.svg  # 기존 앱 아이콘 / toksum-symbol.svg = 심볼 단독
 docs/                 # SPEC/UI/TODO(초안) + DESIGN.md + HANDOFF.md(이 문서)
 ```
 
@@ -93,6 +109,8 @@ docs/                 # SPEC/UI/TODO(초안) + DESIGN.md + HANDOFF.md(이 문서
 - [x] **견적 합계 0원 바닥 (v0.15, 완료·검증)** — `quoteTotal()=max(0,grandTotal())`, 화면 합계바·복사 텍스트 공통. 원값 grandTotal은 유지(음수 가능), 개별 할인 줄도 그대로 음수. 8777에서 원값 −5,500→0원 검증(§10).
 - [x] **직접입력 0원 = 무료 (v0.16, 완료·검증)** — 금액 인풋이 `"0"`을 유지하도록 앞 0 제거 정규식을 `/^0+(?=\d)/`로(05→5, 000→0, 0은 유지). `readDirectInput()`의 `hasAmount`로 **빈칸과 0원을 구분** → `+추가`·`50% 추가`는 0원을 받고 "무료"로 표시(`formatWonOrFree`), `− 할인`만 0원 거부. `js/format.js`·`js/main.js` 2개 파일만 수정. 8777에서 입력포맷·추가·합계·차단 검증(§10).
 - [x] **🚨 클라우드 소실 방지 3중 안전망 (2026-08-02, 완료·검증)** — 실사용자 메뉴 소실 사고 대응. ①**저장 게이트**(cloud.js `enableFolderSync/disableFolderSync/queueFolderSave`, auth.js 제어): 로그인 클라우드 로드 성공 전엔 자동 저장 차단, 실패 세션은 잠금 유지. ②**메뉴 백업**(menuSettings.js): JSON 내보내기/불러오기(수동 안전망). ③**방어 심화**(cloud.js): `saveUserFolders`를 `runTransaction`으로 → 덮어쓰기 직전 folders를 `foldersPrev`에 백업 + 복구 헬퍼 `window.__restoreCloudPrev()`. 보안 규칙(단순 소유자 체크) 새 필드 저장 호환 확인. 8777에서 모듈 로드·백업 왕복·SDK API 검증(트랜잭션 저장은 실데이터라 미실행). 상세 §10·§11·CHANGELOG.
+
+- [x] **PWA 설치 셸 — 안드로이드 앱 설치 (v0.17, 완료·실기기 검증)** — 스토어 없이 폰에 설치. `manifest.json`+`sw.js`+아이콘 PNG 5종(maskable 신규 제작) → 안드로이드 크롬이 **WebAPK** 생성(앱 서랍·주소창 없음·독립 카드·오프라인). **실기기 4종 통과**(로그인·세이프에어리어·복사·오프라인) → **후속 수정 없었음, CSS 변경 0**. 계획·체크리스트는 `docs/PWA-PLAN.md`, 규칙은 §10.
 
 **클릭 액션(main.js `onClick`) 현황:** 전부 연결됨 — `open-menu, toggle-folder, add-menu, add-direct, half, discount, copy, remove-item, qty-inc, qty-dec, undo, clear, open-account`(계정 바텀시트). 개수 입력칸 `qty-input`은 별도 `change`/`keydown(Enter)` 리스너. (redo는 v0.4에서 제거, 체크박스 `toggle-item`은 v0.10에서 제거)
 
@@ -158,11 +176,23 @@ docs/                 # SPEC/UI/TODO(초안) + DESIGN.md + HANDOFF.md(이 문서
   - **큰 변경 전엔 `cp css/style.css css/style.css.bak`로 백업**(git 아님) — 사용자가 자주 롤백함. 매 변경 후 8777에서 눈으로 확인(스크린샷). (JS 큰 변경 시 `.bak`도 활용 — 이번 세션에 state/main/auth 백업한 전례.)
   - **깊이감을 카드/회색 캔버스로 풀지 말 것**(§10, 이미 2번 거부됨).
 - ✅ **Firebase 승인 도메인 추가 완료** — 배포 도메인 `design-purim.github.io`를 Firebase 콘솔 승인된 도메인에 추가, **배포 사이트 Google 로그인 정상 동작 확인**(사용자 완료). 더 이상 미결 배포 이슈 없음.
-- **다음 할 일 (사용자가 명시한 순서 — 이제 다듬기 단계)**:
-  1. ✅ **로고/브랜드 마크 (v0.9, 완료)** — "T·" 심볼(잉크 T + 초록 탭닷) 확정, 헤더 락업·파비콘·앱아이콘 에셋까지. **확정 스펙·좌표·락업 원리는 DESIGN.md §5**. 임시 미리보기(`_logo_preview.html`)는 8777에서 반복 확인 후 삭제함(로고 다듬을 땐 같은 방식으로 임시 파일 만들어 확인). ⚠️ iOS `apple-touch-icon`·PWA maskable은 **PNG 필요**(지금 SVG만) → PWA 단계에서 생성.
-  2. **개인정보처리방침 페이지 (미착수, 광고와 무관하게 필요)** — 톡셈은 이미 구글 로그인으로 **이메일·프로필·uid를 받아 Firestore에 저장**하는데 방침 페이지가 없다. 한국 개인정보보호법 대상이고 구글 로그인 API 약관도 고지를 요구. 정적 HTML 1장이면 충분(수집 항목·보관·삭제 방법·문의처). §12의 애드센스 재료이기도 하지만 **광고를 안 해도 만들어야 하는 항목**.
-  3. ✅ **PWA 설치 셸 + 실기기 확인 (v0.17, 완료)** — 안드로이드 폰에 WebAPK 설치 확인. **로그인·세이프에어리어·복사·오프라인 4종 전부 통과 → 후속 수정 없었음.** ⚠️ 두 가지를 기억할 것: ①**`signInWithRedirect`로 바꾸지 말 것**(popup이 실기기에서 정상 — §10 저장 게이트를 건드릴 이유 없음) ②**세이프에어리어를 선제 적용하지 말 것**(실제로 안 물림. 눈으로 본 뒤에만).
-  4. **디자인 다듬기** — 밋밋함(리듬·타이포 방향으로만), 설치형 PWA 셸(manifest/아이콘/세이프에어리어, 미적용 — 로고 PNG도 여기서), 퍼센트 선택 바텀시트(할인 %, overlay.js 재사용, 미구현), 방금 붙은 것들 톤 조정. ⚠️ 사용자가 "디자인이 뭔가 아쉽다"던 지점 새 눈으로 재점검. **"톡! 터치 느낌"은 로고가 아니라 모션(스플래시/버튼 리플)으로** 살리기로 결정됨(리플을 정적 로고에 넣으면 지저분).
+- ✅ **끝난 것(다시 손대지 말 것)**: 로고/브랜드 마크(v0.9 — 스펙은 DESIGN.md §5) · **PWA 설치 셸 + 안드로이드 앱 설치(v0.17 — 실기기 4종 통과, 후속 수정 없었음)**.
+  - ⚠️ v0.17에서 배운 것 2가지: ①**`signInWithRedirect`로 바꾸지 말 것** — standalone에서 `signInWithPopup`이 정상 동작했다. 바꾸면 §10 **저장 게이트**(소실 사고 지점)를 다시 검증해야 한다. ②**세이프에어리어를 선제 적용하지 말 것** — 하단바가 제스처 바에 **안 물린다**(실기기 확인). 없는 문제를 고치지 말고, 실제로 물리는 걸 눈으로 본 뒤에만 `.total-bar`·`.overlay-panel`·`.toast`에 적용.
+
+- **다음 할 일 (남은 건 2개뿐. 사용자가 고르는 대로)**:
+
+  1. **개인정보처리방침 페이지 (미착수 · 유일하게 "해야만 하는" 항목)**
+     - **왜**: 톡셈은 이미 구글 로그인으로 **이메일·프로필·uid를 받아 Firestore에 저장**하는데 방침 페이지가 없다. 한국 개인정보보호법 대상 + 구글 로그인 API 약관이 고지를 요구. **광고·스토어와 무관하게 필요.**
+     - **무엇**: 정적 HTML 1장이면 충분 — 수집 항목(이메일·이름·프로필사진·uid·메뉴 설정) · 이용 목적(다기기 동기화) · 보관처(Firebase/Firestore, 구글 클라우드) · 보관 기간 · **삭제 방법**(계정 삭제 요청 경로) · 문의처.
+     - **어디에**: 루트에 `privacy.html`. 진입점은 **계정 바텀시트 하단에 작은 링크 한 줄**이 자연스럽다(메인 화면 무손상 — §10 "덜어내는 쪽" 원칙).
+     - ⚠️ 앱에 **계정/데이터 삭제 기능이 없다** — 방침에 삭제 방법을 적으려면 "문의 시 처리" 문구로 갈지, 기능을 만들지 먼저 정해야 한다. **사용자에게 확인할 것.**
+
+  2. **디자인 다듬기 (사용자 주도 · 조각 단위)**
+     - 사용자가 "디자인이 뭔가 아쉽다"고 한 밋밋함 — **리듬·타이포 방향으로만** 접근. ⚠️ §10대로 **카드/회색 캔버스로 풀지 말 것**(이미 2번 거부됨).
+     - **"톡! 터치 느낌" 모션** — 스플래시/버튼 리플. 💡 **스플래시는 v0.17 manifest가 자동 생성하므로 절반은 이미 됨**(흰 배경 + 아이콘). 남은 건 버튼 리플. ⚠️ 리플을 정적 로고에 넣지 말 것(지저분).
+     - **퍼센트 선택 바텀시트**(할인 %, overlay.js 재사용) — 미구현, 보류 상태. 원하면 그때.
+     - `js/vendor/Sortable.min.js` 삭제(죽은 파일, v0.17에서 발견).
+
 - **배포 워크플로우**: 코드 수정 → 프로젝트 루트에서 `git push`(remote `origin` = `design-purim/toksum`, HTTPS + gh 자격증명) → Pages 자동 재빌드(**실측 약 30초**). `gh` CLI는 `~/.local/bin/gh`(design-purim 계정 로그인 완료, `gh`만 쳐도 PATH에 잡힘). 커밋에 `.bak`은 `.gitignore`로 제외됨. 배포 확인: `gh api repos/design-purim/toksum/pages/builds/latest --jq .status`(built면 완료).
 - **git 신원(2026-09-13 설정 완료)**: `user.name=design-purim`, `user.email=307797658+design-purim@users.noreply.github.com`(전역). 저장소가 **Public이라 실제 이메일 노출을 피하려고 GitHub noreply**를 씀 — `relaxrimm@gmail.com`으로 바꾸지 말 것. 잔디·작성자 표시는 noreply로도 정상 연결됨.
 - **미리보기 브라우저가 사용자 계정으로 로그인돼 있을 수 있음** — 이 경우 폴더/메뉴 편집이 **사용자 실제 Firestore 데이터에 반영**되니, 테스트는 저장 안 하고 입력만 확인하거나 되돌릴 것.
@@ -171,8 +201,10 @@ docs/                 # SPEC/UI/TODO(초안) + DESIGN.md + HANDOFF.md(이 문서
 
 1. `docs/HANDOFF.md`(이 문서) → `docs/DESIGN.md` → `docs/SPEC.md`/`UI.md`/`TODO.md` 순으로 읽기.
 2. no-store dev 서버 8777 실행, `http://localhost:8777/index.html` 확인. (스크립트 없으면 §2의 스니펫으로 재생성)
-3. 열린 질문(8번)이 정해졌으면 반영, 아니면 사용자에게 확인.
-4. 계산 로직 잔여(실행취소/비우기 등)는 `state.js`에 `items` 액션 추가 → `main.js onClick`에 케이스 연결 → `ui.js` 목록/합계 렌더는 이미 있음. (v0.5에서 추가·50%·할인·체크합계·삭제·복사·콤마는 연결 완료.)
+3. **§10을 반드시 읽을 것** — "되돌리면 안 되는 결정"이 모여 있다. 특히 **클라우드 저장 게이트**(소실 사고)와 **서비스워커 4건**(v0.17).
+4. **§8의 "다음 할 일"에서 고르기.** 작업 모드는 **사용자 주도**이니 큰 걸 임의로 시작하지 말고 사용자가 짚는 지점을 조각 단위로 처리한다.
+5. 코드 수정 → 8777에서 눈으로 확인 → `git push`(Pages 자동 재빌드 ~30초).
+   ⚠️ **SW는 localhost에서 등록되지 않으므로**(§10) 8777 개발 경험은 v0.16 이전과 완전히 동일하다. PWA 동작을 실제로 보려면 배포 후 라이브(https)에서 확인할 것.
 
 ## 10. 집에서도 통하는 핵심 결정 (구 자동메모리 → 문서화)
 
@@ -188,7 +220,7 @@ docs/                 # SPEC/UI/TODO(초안) + DESIGN.md + HANDOFF.md(이 문서
   - ⚠️ **(v0.10 예외) 견적 목록은 hairline 행으로 전환** — 사용자 지시로 리스트만 gray-100 채움 제거 → 행 사이 hairline 구분선(`--border`) + 한 줄 컴팩트. 이 원칙(요소 gray-100)은 **메뉴칩·입력칸 등 나머지엔 여전히 유효**, 견적 목록 행만 예외.
 - **빈 상태(노데이터)는 숨김** (v0.4) — 사용자가 없는 편이 낫다고 판단. 다시 넣자 제안 금지(`ui.js` renderList에 복원 주석만).
 - **하단바 = 합계(정보) + 복사(파란 CTA, 액션 히어로) + 실행취소·비우기(회색 유틸)** (v0.4). redo 없음. 복사가 이 앱의 최종 목적이라 하단 단일 CTA.
-- **앱 느낌 방향은 ②UI 패턴** (v0.4) — iOS 라지 타이틀 + 반투명 블러 바 채택. ①설치형 PWA 셸(manifest/아이콘/세이프에어리어)은 **아직 미적용**, 다음 후보.
+- **앱 느낌 방향은 ②UI 패턴** (v0.4) — iOS 라지 타이틀 + 반투명 블러 바 채택. ~~①설치형 PWA 셸은 아직 미적용~~ → **(v0.17) ①도 완료** — manifest·SW·아이콘까지 붙어 안드로이드에 WebAPK로 설치된다. 세이프에어리어는 **실기기에서 안 물려서 적용 안 함**(§8).
 - **여백 리듬 = 28 > 22 > 12 > 8** (그룹 사이 > 그룹 안) (v0.4). 폴더는 접힘 시 10으로 촘촘하게(v0.5).
 - **폴더 캐럿(⌃/⌄) 제거 금지** (v0.5) — 폴더를 "접을 수 있다"고 인식하는 유일한 신호. 오른쪽 화살표가 번잡하면 "관리" 쪽(→톱니 아이콘)만 손댈 것. 캐럿은 유지.
 - ~~**합계 = 체크된 항목만(`selectedTotal`)** (v0.5)~~ → **(v0.10 뒤집힘) 합계·복사 = 목록 전체(`grandTotal`)**. 체크박스 제거("안 넣을 거면 그냥 삭제", 사용자 확정). 빼려면 항목 X 삭제(↶ 복구). `selected`/`toggleItem`/`selectedTotal` 코드에서 제거됨.
