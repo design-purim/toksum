@@ -8,7 +8,14 @@
 
   <!-- 파비콘: 톡셈 심볼(다크 사각). SVG라 모든 배율에서 또렷. -->
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-  <link rel="apple-touch-icon" href="assets/toksum-icon-dark.svg" />
+  <link rel="apple-touch-icon" href="assets/icon-180.png" />
+
+  <!-- PWA 설치 셸(v0.17): manifest가 있어야 안드로이드가 WebAPK(진짜 앱)로 설치해 준다.
+       경로는 모두 상대경로 — 라이브가 서브경로(/toksum/)라 절대경로로 쓰면 설치가 조용히 실패한다. -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="톡셈" />
 
   <!-- Wanted Sans (SIL OFL 1.1, 완전 무료 오픈소스). 분할 서브셋이라 필요한 글자만 로드.
        로드 실패 시 아래 style.css의 시스템 폰트 fallback으로 자연스럽게 대체됩니다. -->

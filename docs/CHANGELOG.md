@@ -1,5 +1,26 @@
 # CHANGELOG
 
+## feat: PWA 설치 셸 — 안드로이드에 앱으로 설치 (v0.17, 2026-09-14)
+> 사용자 요청: **스토어 출시는 하지 않고**, 폰에 앱으로 설치만 되게. → TWA/Play Console($25·테스터 12명·assetlinks·서명키)을 전부 빼고 **설치형 PWA만** 구현. 조건을 갖추면 안드로이드 크롬이 **WebAPK**를 생성해 앱 서랍 등록·주소창 없음·독립 카드·오프라인이 된다(스토어 앱과 체감 동일). 검토 전문은 `docs/PWA-PLAN.md`.
+
+- **manifest.json 신규** — `display:standalone`, `orientation:portrait`, `theme_color #0CA678`, `background_color #FFFFFF`(스플래시), 아이콘 4종(any 192·512 / maskable 192·512).
+  - ⚠️ **경로는 전부 상대(`./`)** — 라이브가 서브경로(`/toksum/`)라 절대경로로 쓰면 설치가 **에러 없이 조용히 실패**한다. 되돌리지 말 것.
+- **아이콘 PNG 5종 생성** — 기존 SVG만으로는 PWA·apple-touch가 안 됨(DESIGN.md §5 "PWA 단계에서 생성" 숙제). 이 맥엔 node/ImageMagick/rsvg가 없어 **macOS 기본 `sips`**로 변환(추가 설치 불필요).
+- **maskable 전용 아이콘 신규 제작**(`assets/toksum-maskable-dark.svg`) — 기존 아이콘은 모서리가 둥글고 **바깥이 투명**이라 maskable로 쓸 수 없다(런처가 자체 모양으로 또 잘라냄). **풀블리드 사각 + 글리프 0.78배**. DESIGN.md §5 확정 좌표는 건드리지 않고 `transform`으로만 축소 → 스펙 보존. 안전원(80%) 통과 확인.
+- **아이콘 안 = 다크 + 초록점**(사용자 선택) — 그린 배경 안은 초록 점이 안 보여 흰 점이 되고, 그러면 §5의 **"T가 초록 점을 톡 누른다"는 탭닷 은유가 사라진다**. 다크만 은유가 살고 §10 "강조 1색"(그린은 악센트로만)과도 맞음.
+- **sw.js 신규 — 전략을 둘로 명확히 분리**(⚠️ 이 구분이 이번 작업의 핵심):
+  - 우리 코드(HTML/JS/CSS/manifest) = **네트워크 우선** — 온라인이면 항상 최신, 실패 시에만 캐시.
+  - 폰트·아이콘 = **캐시 우선**.
+  - `VERSION` 상수 하나로 구버전 앱 캐시를 `activate`에서 일괄 삭제. 폰트 캐시(`toksum-font-v1`)는 URL에 버전이 박혀 있어 버전 무관 유지.
+  - **Firebase SDK·Firestore·POST는 아예 가로채지 않음** — 쓰기 요청을 SW가 건드리지 않는다(2026-08-02 소실 이력 고려).
+  - 캐시 쓰기는 **`evt.waitUntil`로 붙듦**(fire-and-forget이면 SW 조기 종료 시 쓰기 유실).
+- **🔑 localhost에서는 SW를 등록하지 않는다**(`location.protocol === "https:"` 조건, main.js) — HANDOFF §6 함정 1(모듈 캐시)의 강화판이라, SW가 로컬에 붙으면 no-store 서버도 새 포트도 소용없어 **개발 워크플로가 통째로 막힌다**. 배포(https)에서만 켠다. ⚠️ **이 조건 삭제 금지.**
+- **폰트 = SW 런타임 캐시(A안)** — 자체 호스팅은 **92개 파일 2.2MB**를 저장소에 넣어야 하는데, 실제로 쓰이는 서브셋은 **6~7개뿐**(실측). 사용자 다운로드량은 양쪽 동일해서 저장소만 무거워짐 → A안. 대가: jsdelivr 의존이 남고, 오프라인에서 처음 보는 글자는 시스템 폰트로 폴백.
+- **죽은 파일 발견** — `js/vendor/Sortable.min.js`는 아무데서도 import되지 않음(쓰는 건 `sortable.esm.js`). 프리캐시에서 제외. 삭제는 별건.
+- **검증(8777)**: ①manifest 필수 8항목 + 아이콘 4종 로드 + 상대경로 해석 ②**SW 로직을 가짜 `self`에 태워 실제 실행** — 미리보기 브라우저가 SW 등록 자체를 막아(빈 SW도 실패) 등록 대신 주입 방식으로 검증: install 프리캐시 **23/23**, activate가 구버전 삭제·폰트캐시 유지·claim 호출, 라우팅 7종(우리 코드/폰트=가로챔, Firebase SDK/Firestore/POST=통과), **오래된 캐시를 심어도 온라인이면 최신 반환**, 오프라인 폴백(캐시 응답·navigate→index.html 복귀·미캐시는 정상 실패) ③검증 캐시·SW·임시파일 전부 제거 후 새 탭에서 콘솔 에러 0 확인.
+- **⚠️ 실기기 확인 필요(다음)**: 구글 로그인(standalone에서 `signInWithPopup`), 세이프에어리어(하단바가 제스처 바에 물리는지), 업데이트 반영.
+- **변경 파일**: `manifest.json`(신규), `sw.js`(신규), `assets/toksum-maskable-dark.svg`(신규), `assets/icon-{180,192,512,maskable-192,maskable-512}.png`(신규), `index.html`, `js/main.js`, `docs/PWA-PLAN.md`(신규).
+
 ## feat: 직접입력 0원 = 무료 (v0.16, 2026-09-13)
 > 메뉴에 등록된 항목만 "무료"가 될 수 있었고, **금액칸에 0을 타이핑하는 것 자체가 막혀** 있었다(빈칸과 구분 불가). 일회성 서비스/증정 항목을 메모와 함께 0원으로 바로 넣을 수 있게 함.
 

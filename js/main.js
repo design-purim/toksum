@@ -241,3 +241,19 @@ window.__restoreCloudPrev = async () => {
   showToast("이전 백업으로 복구했어요");
   return `이전 스냅샷 폴더 ${prev.length}개로 복구됨.`;
 };
+
+// ===== PWA: 서비스워커 등록 (v0.17) =====
+// 안드로이드 크롬은 manifest + 서비스워커가 있어야 WebAPK(진짜 앱)로 설치해 준다.
+//
+// 🔑 **localhost에서는 등록하지 않는다 (https일 때만).**
+//    HANDOFF §6 함정 1(모듈 캐시)의 이유 그대로 — SW가 로컬에 한번 붙으면
+//    no-store 서버도 새 포트도 소용이 없어 개발 워크플로가 통째로 막힌다.
+//    배포(https)에서만 켜고, 8777 개발 환경은 지금까지처럼 깨끗하게 둔다.
+//    ⚠️ 이 조건을 지우지 말 것.
+if ("serviceWorker" in navigator && location.protocol === "https:") {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("sw.js") // 상대경로 — 라이브 서브경로(/toksum/)에서도 정확히 잡힌다
+      .catch((err) => console.warn("[pwa] 서비스워커 등록 실패:", err));
+  });
+}

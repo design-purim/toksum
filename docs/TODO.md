@@ -20,7 +20,10 @@
 ## 남은 것 (다듬기 단계)
 
 - [x] Firebase 승인 도메인에 `design-purim.github.io` 추가 (완료 · 배포 사이트 로그인 정상 동작 확인)
-- [ ] PWA 설치 셸 (manifest · 세이프에어리어 · 로고 PNG 아이콘 192/512·maskable · apple-touch PNG)
+- [x] PWA 설치 셸 — 안드로이드 앱 설치 (v0.17 · manifest + sw.js + 아이콘 PNG 5종 + maskable 신규. 스토어 출시는 안 함)
+  - [ ] ↳ **실기기 확인 잔여**: 구글 로그인(standalone) · 세이프에어리어 · 업데이트 반영 (PWA-PLAN.md Stage 6)
+- [ ] 개인정보처리방침 페이지 (구글 로그인으로 이메일·프로필·uid 수집 중 → 법적으로 필요. 광고·스토어와 무관)
+- [ ] `js/vendor/Sortable.min.js` 삭제 (어디서도 import 안 되는 죽은 파일 · v0.17에서 발견)
 - [ ] 디자인 다듬기 (밋밋함 — 리듬·타이포 방향)
 - [ ] "톡! 터치" 모션 (스플래시/버튼 리플 — 로고엔 안 넣기로 결정)
 - [ ] 퍼센트 선택 바텀시트 (할인 %, overlay.js 재사용 · 미구현)

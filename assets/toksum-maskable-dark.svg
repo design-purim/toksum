@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="512" height="512" role="img" aria-label="톡셈 앱 아이콘 (maskable, 다크)">
+  <!-- maskable: 런처가 자체 모양(원/스퀘어클)으로 잘라내므로 모서리 라운드 없이 꽉 채운다. -->
+  <rect width="100" height="100" fill="#191F28"/>
+  <!-- 글리프 좌표는 아이콘 원본 그대로. 마스크 크롭분(안전원 80%) 보정으로 0.78배만 축소. -->
+  <g transform="translate(50 50) scale(0.78) translate(-50 -50)">
+    <rect x="28" y="26" width="44" height="11" rx="5.5" fill="#fff"/>
+    <rect x="44.5" y="26" width="11" height="30" rx="5.5" fill="#fff"/>
+    <circle cx="50" cy="68" r="6" fill="#0CA678"/>
+  </g>
+</svg>
