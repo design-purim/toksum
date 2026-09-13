@@ -28,7 +28,7 @@ export function formatWonOrFree(n) {
 
 // input에 실시간 포맷팅을 붙입니다.
 //  - 숫자만 남기고 천단위 콤마 삽입(1000 → 1,000)
-//  - 맨 앞 0 제거("" / 05 → 5)
+//  - 맨 앞 0 제거(05 → 5). 단 "0" 한 자리는 남긴다(0원 = 무료 직접입력).
 //  - 콤마 삽입으로 밀린 커서를 '왼쪽 숫자 개수' 기준으로 복원(중간 편집 시 안 튐)
 export function attachAmountFormatting(input) {
   if (!input) return;
@@ -37,7 +37,8 @@ export function attachAmountFormatting(input) {
     const caret = input.selectionStart ?? raw.length;
     const digitsBeforeCaret = raw.slice(0, caret).replace(/\D/g, "").length;
 
-    const digits = raw.replace(/\D/g, "").replace(/^0+/, ""); // 숫자만 + 맨 앞 0 제거
+    // 숫자만 + 맨 앞 0 제거. `(?=\d)` 덕분에 마지막 0은 살아남아 "0" 입력이 가능하다.
+    const digits = raw.replace(/\D/g, "").replace(/^0+(?=\d)/, "");
     const formatted = digits.replace(/\B(?=(\d{3})+(?!\d))/g, ","); // 천단위 콤마
     input.value = formatted;
 

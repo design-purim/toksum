@@ -147,6 +147,8 @@ function readDirectInput() {
     amountEl,
     memoEl,
     amount: parseAmount(amountEl.value),
+    // 빈칸과 "0"을 구분한다. 0원은 유효한 입력(무료)이고, 빈칸만 막는다.
+    hasAmount: amountEl.value.trim() !== "",
     memo: memoEl.value.trim(),
   };
 }
@@ -157,23 +159,24 @@ function clearDirectInput(amountEl, memoEl) {
   amountEl.focus();
 }
 
-// +추가 → 입력액 그대로 목록에 추가
+// +추가 → 입력액 그대로 목록에 추가. 0원이면 "무료" 항목으로 들어간다(formatWonOrFree).
 function handleAddDirect() {
-  const { amountEl, memoEl, amount, memo } = readDirectInput();
-  if (!amount) return void amountEl.focus();
+  const { amountEl, memoEl, amount, hasAmount, memo } = readDirectInput();
+  if (!hasAmount) return void amountEl.focus();
   addItem({ name: memo || "직접입력", amount, type: "direct" });
   clearDirectInput(amountEl, memoEl);
 }
 
 // 50% 추가 → 입력액의 절반(반올림)을 목록에 추가
 function handleHalf() {
-  const { amountEl, memoEl, amount, memo } = readDirectInput();
-  if (!amount) return void amountEl.focus();
+  const { amountEl, memoEl, amount, hasAmount, memo } = readDirectInput();
+  if (!hasAmount) return void amountEl.focus();
   addItem({ name: memo || "50%", amount: Math.round(amount * 0.5), type: "half" });
   clearDirectInput(amountEl, memoEl);
 }
 
 // − 할인 → 입력액을 마이너스로 목록에 추가
+// (할인만은 0원을 받지 않는다 — 0원 할인은 의미가 없고 "무료"도 아님. 메뉴 설정의 할인 0원 거부와 동일한 규칙.)
 function handleDiscount() {
   const { amountEl, memoEl, amount, memo } = readDirectInput();
   if (!amount) return void amountEl.focus();
